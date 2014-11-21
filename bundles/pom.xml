@@ -8,8 +8,8 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.openhab</groupId>
-  <artifactId>bundles</artifactId>
+  <groupId>org.openhab.bundles</groupId>
+  <artifactId>pom</artifactId>
 
   <name>openHAB Bundles</name>
 

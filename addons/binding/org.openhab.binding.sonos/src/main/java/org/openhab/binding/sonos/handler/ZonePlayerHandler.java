@@ -166,8 +166,6 @@ UpnpIOParticipant, DiscoveryListener {
 				.equals(result.getProperties().get(UDN))) {
 			logger.debug("Discovered UDN '{}' for thing '{}'", result
 					.getProperties().get(UDN), getThing().getUID());
-			getThing().getConfiguration().put(FRIENDLY_NAME,
-					result.getProperties().get(FRIENDLY_NAME));
 			getThing().setStatus(ThingStatus.ONLINE);
 			onSubscription();
 			onUpdate();
@@ -289,8 +287,8 @@ UpnpIOParticipant, DiscoveryListener {
 
 	public void onValueReceived(String variable, String value, String service) {
 
-		logger.trace("Received pair '{}':'{}' for thing '{}'", new Object[] {
-				variable, value, this.getThing().getUID() });
+		logger.trace("Received pair '{}':'{}' (service '{}') for thing '{}'", new Object[] {
+				variable, value, service, this.getThing().getUID() });
 
 		this.stateMap.put(variable, value);
 
@@ -331,6 +329,7 @@ UpnpIOParticipant, DiscoveryListener {
 				updateState(new ChannelUID(getThing().getUID(), STATESWITCH),
 						OnOffType.OFF);
 			}
+			break;
 		}
 		case "CurrentLEDState": {
 			State newState = UnDefType.UNDEF;
@@ -342,6 +341,7 @@ UpnpIOParticipant, DiscoveryListener {
 				}
 			}
 			updateState(new ChannelUID(getThing().getUID(), LED), newState);
+			break;
 		}
 		case "CurrentZoneName": {
 			updateState(new ChannelUID(getThing().getUID(), ZONENAME),
@@ -352,11 +352,13 @@ UpnpIOParticipant, DiscoveryListener {
 			updateState(new ChannelUID(getThing().getUID(), ZONEGROUP),
 					(stateMap.get("ZoneGroupState") != null) ? new StringType(
 							stateMap.get("ZoneGroupState")) : UnDefType.UNDEF);
+			break;
 		}
 		case "LocalGroupUUID": {
 			updateState(new ChannelUID(getThing().getUID(), ZONEGROUPID),
 					(stateMap.get("LocalGroupUUID") != null) ? new StringType(
 							stateMap.get("LocalGroupUUID")) : UnDefType.UNDEF);
+			break;
 		}
 		case "GroupCoordinatorIsLocal": {
 			State newState = UnDefType.UNDEF;
@@ -369,11 +371,13 @@ UpnpIOParticipant, DiscoveryListener {
 			}
 			updateState(new ChannelUID(getThing().getUID(), LOCALCOORDINATOR),
 					newState);
+			break;
 		}
 		case "VolumeMaster": {
 			updateState(new ChannelUID(getThing().getUID(), VOLUME),
 					(stateMap.get("VolumeMaster") != null) ? new PercentType(
 							stateMap.get("VolumeMaster")) : UnDefType.UNDEF);
+			break;
 		}
 		case "MuteMaster": {
 			State newState = UnDefType.UNDEF;
@@ -385,6 +389,7 @@ UpnpIOParticipant, DiscoveryListener {
 				}
 			}
 			updateState(new ChannelUID(getThing().getUID(), MUTE), newState);
+			break;
 		}
 		case "LineInConnected": {
 			State newState = UnDefType.UNDEF;
@@ -396,6 +401,7 @@ UpnpIOParticipant, DiscoveryListener {
 				}
 			}
 			updateState(new ChannelUID(getThing().getUID(), LINEIN), newState);
+			break;
 		}
 		case "AlarmRunning": {
 			State newState = UnDefType.UNDEF;
@@ -408,6 +414,7 @@ UpnpIOParticipant, DiscoveryListener {
 			}
 			updateState(new ChannelUID(getThing().getUID(), ALARMRUNNING),
 					newState);
+			break;
 		}
 		case "RunningAlarmProperties": {
 			updateState(
@@ -415,6 +422,7 @@ UpnpIOParticipant, DiscoveryListener {
 					(stateMap.get("RunningAlarmProperties") != null) ? new StringType(
 							stateMap.get("RunningAlarmProperties"))
 					: UnDefType.UNDEF);
+			break;
 		}
 		case "CurrentURIFormatted": {
 			updateState(
@@ -422,21 +430,25 @@ UpnpIOParticipant, DiscoveryListener {
 					(stateMap.get("CurrentURIFormatted") != null) ? new StringType(
 							stateMap.get("CurrentURIFormatted"))
 					: UnDefType.UNDEF);
+			break;
 		}
 		case "CurrentTitle": {
 			updateState(new ChannelUID(getThing().getUID(), CURRENTTITLE),
 					(stateMap.get("CurrentTitle") != null) ? new StringType(
 							stateMap.get("CurrentTitle")) : UnDefType.UNDEF);
+			break;
 		}
 		case "CurrentArtist": {
 			updateState(new ChannelUID(getThing().getUID(), CURRENTARTIST),
 					(stateMap.get("CurrentArtist") != null) ? new StringType(
 							stateMap.get("CurrentArtist")) : UnDefType.UNDEF);
+			break;
 		}
 		case "CurrentAlbum": {
 			updateState(new ChannelUID(getThing().getUID(), CURRENTALBUM),
 					(stateMap.get("CurrentAlbum") != null) ? new StringType(
 							stateMap.get("CurrentAlbum")) : UnDefType.UNDEF);
+			break;
 		}
 		}
 
