@@ -15,16 +15,23 @@
 	href='http://fonts.googleapis.com/css?family=Roboto:100,200,300,400,500,700,'
 	rel='stylesheet' type='text/css'></link-->
 <link type="text/css" href="css/bootstrap.css" rel="stylesheet"></link>
-<link type="text/css" href="fonts/icomoon/icomoon.css" rel="stylesheet"
-	media="all"></link>
-<link type="text/css" href="css/cw-style.css" rel="stylesheet"></link>
 <link type="text/css" href="css/bootstrap-tagsinput.css" rel="stylesheet"></link>
+<link type="text/css" href="js/lib/angular-material/angular-material.min.css" rel="stylesheet"></link>
+<link type="text/css" href="js/lib/angular-material/themes/red-theme.css" rel="stylesheet"></link>
 
 <!-- custom css files -->
-<link type="text/css" href="css/main.css" rel="stylesheet"></link>
-<link type="text/css" href="css/theme.openhab.css" rel="stylesheet"></link>
+<!--link type="text/css" href="css/main.css" rel="stylesheet"></link-->
+<link type="text/css" href="css/components.css" rel="stylesheet"></link>
+<link type="text/css" href="css/layout.css" rel="stylesheet"></link>
+<link type="text/css" href="css/views.css" rel="stylesheet"></link>
 
-<link rel="import" href="components/paper-elements/paper-elements.html">
+<!-- Fonts -->
+<link type="text/css" href="fonts/icomoon/icomoon.css" rel="stylesheet"
+	media="all"></link>
+<link type="text/css" href="fonts/md-icons/md-icons.css"
+	rel="stylesheet" media="all"></link>
+
+<!-- link rel="import" href="components/paper-elements/paper-elements.html"-->
 
 <link rel="shortcut icon" href="img/favicon.ico" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -49,7 +56,7 @@
 			<li ng-class="{active: isActive('control')}"><a href="#control"><span
 					class="icon icon-equalizer"></span> Control</a></li>
 			<li ng-class="{active: isActive('inbox')}"><a href="#inbox"><span
-					class="icon icon-box-add"></span> Inbox</a></li>
+					class="icon md-icon-add-circle-outline"></span> Setup Wizard</a></li>
 			<!-- li><a href="#"><span class="icon icon-cogs"></span>
 					Automation</a></li-->
 			<li ng-class="{active: isActive('configuration')}"><a
@@ -67,7 +74,7 @@
 	<div id="wrapper">
 		<header>
 			<a href="#" class="open-menu">&#x2261;</a>
-			<h1>{{title}}</h1>
+			<h1>{{title}} <span ng-show="subtitle">%gt; {{subtitle}}</span></h1>
 		</header>
 
 		<ng-view></ng-view>
@@ -88,18 +95,29 @@
 	<!-- lib js files -->
 	<script src="js/lib/jquery.min.js"></script>
 	<script src="js/lib/jquery-ui.min.js"></script>
-	<script src="js/lib/angular.min.js"></script>
-	<script src="js/lib/angular-route.min.js"></script>
-	<script src="js/lib/angular-resource.min.js"></script>
+	
+	<script src="js/lib/angular/angular.min.js"></script>
+	<script src="js/lib/angular-route/angular-route.min.js"></script>
+	<script src="js/lib/angular-resource/angular-resource.min.js"></script>
+    <script src="js/lib/angular-aria/angular-aria.min.js"></script>
+    <script src="js/lib/angular-animate/angular-animate.min.js"></script>
+    <script src="js/lib/angular-material/angular-material.min.js"></script>
+	<script src="js/lib/hammerjs/hammer.min.js"></script>
+	
 	<script src="js/lib/bootstrap.min.js"></script>
 	<script src="js/lib/bootstrap-tagsinput.min.js"></script>
 	<script src="js/lib/tinycolor.js"></script>
 	<script src="js/lib/masonry.pkgd.min.js"></script>
+	<script src="js/lib/sprintf/dist/sprintf.min.js"></script>
 
 	<!-- custom js files -->
 	<script src="js/app.js"></script>
 	<script src="js/services.js"></script>
+	<script src="js/services.rest.js"></script>
+	<script src="js/services.repositories.js"></script>
 	<script src="js/controllers.js"></script>
+	<script src="js/controllers.setup.js"></script>
+	<script src="js/controllers.configuration.js"></script>
 	<script src="js/main.js"></script>
 </body>
 </html>

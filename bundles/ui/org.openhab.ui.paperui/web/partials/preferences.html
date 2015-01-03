@@ -1,13 +1,13 @@
-<section id="main">
+<section id="main" class="white-bg">
 	<div class="section-header">
 		<div class="container">
-			<h3>
-				Edit Preferences</small>
-			</h3>
-			<div class="toolbar">
-				<paper-fab icon="check" class="green"
-					ng-click="save(getSelected('language'), getSelected('theme'))"></paper-fab>
-				<paper-fab icon="close" ng-click="navigateToRoot()"></paper-fab>
+			<h1>Edit Preferences</h1>
+			<p>Configure your preferences</p>
+			<div class="action-toolbar">
+				<md-button title="Add"
+					ng-click="save(getSelected('language'), getSelected('theme'))"
+					class="green"> <span class="md-icon-check"></span> Save</md-button>
+				<md-button title="Back" class="white" ng-click="navigateToRoot()">Cancel</md-button>
 			</div>
 		</div>
 	</div>
@@ -18,15 +18,14 @@
 
 		<form class="form" role="form">
 			<div class="form-group">
-
-				<label class="control-label">Language</label>
-				<select id="language" class="form-control">
+				<label class="control-label">Language</label> <select id="language"
+					class="form-control">
 					<option value="en" ng-selected="!language">System Default</option>
 					<option value="en" ng-selected="language=='en'">English</option>
 					<option value="de" ng-selected="language=='de'">German</option>
 				</select>
-				<p class="help-block">Configure language for Binding texts (UI is not localized
-					yet)</p>
+				<p class="hint"><small>Configure language for Binding texts (UI
+					is not localized yet)</small></p>
 			</div>
 			<div class="form-group">
 				<label class="control-label">Theme</label> <select id="theme"

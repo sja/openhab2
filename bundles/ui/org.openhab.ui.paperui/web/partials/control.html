@@ -1,53 +1,58 @@
-<paper-tabs noink> <paper-tab ng-repeat="tab in tabs"
-	ng-click="navigateTo(tab)">{{tab}}</paper-tab></paper-tabs>
+<md-tabs> <md-tab ng-repeat="tab in tabs"
+	ng-click="navigateTo(tab)" label="{{tab}}"
+	md-active="currentTab === tab" /></md-tabs>
+
 <section id="main" class="container control">
 	<div ng-controller="ControlController" class="items row">
 		<div class="col-md-4 col-sm-6 col-xs-12 item-wrapper"
 			ng-repeat="item in items[currentTab]">
-			<div class="card item {{item.type}}" data-item-name="{{item.name}}">
+			<div ng-if="item.tags.indexOf('thing') >= 0"
+				class="card item {{item.type}}" data-item-name="{{item.name}}">
 				<div class="ibadge">
 					<span class="icon-x">
 				</div>
 				<div class="clabel">
-					<h3>{{getItemName(item.name)}}</h3>
+					<h3>{{item.label}}</h3>
 				</div>
-				<div ng-switch on="item.type" class="icontrol cbody">
-					<div ng-switch-when="SwitchItem"
-						ng-controller="SwitchItemController">
-						<paper-radio-group ng-model="item.state" switch
-							ng-click="toggleSwitch($event)"> <paper-radio-button
-							name="ON" label="ON"></paper-radio-button> <paper-radio-button
-							name="OFF" label="OFF"></paper-radio-button></paper-radio-group>
-					</div>
-					<div ng-switch-when="DimmerItem"
-						ng-controller="DimmerItemController">
-						<h1>{{item.state}}%</h1>
-						<paper-radio-group ng-model="item.state" switch
-							ng-click="toggleSwitch($event)"> <paper-radio-button
-							name="ON" label="ON"></paper-radio-button> <paper-radio-button
-							name="OFF" label="OFF"></paper-radio-button></paper-radio-group>
-						<paper-slider pin slide ng-change="setDimValue($event)"
-							ng-model="item.state" value="{{item.state}}"></paper-slider>
-					</div>
-					<div ng-switch-when="ColorItem" ng-controller="ColorItemController">
+				<div class="" ng-repeat="member in item.members">
+					<div ng-switch on="member.type" class="icontrol cbody">
+						<div ng-switch-when="SwitchItem"
+							ng-controller="SwitchItemController">
+							<md-radio-group ng-model="member.state"
+								ng-change="toggle(item.state)"> <md-radio-button
+								value="ON">ON</md-radio-button> <md-radio-button value="OFF">OFF</md-radio-button>
+							</md-radio-group>
+						</div>
+						<div ng-switch-when="DimmerItem"
+							ng-controller="DimmerItemController">
+							<h1>{{item.state}}%</h1>
+							<md-radio-group ng-model="on" ng-change="setOn(on)">
+							<md-radio-button value="ON">ON</md-radio-button> <md-radio-button
+								value="OFF">OFF</md-radio-button> </md-radio-group>
+							<md-slider flex min="0" max="100" ng-model="member.state"
+								ng-change="setBrightness(item.state)" />
+						</div>
+						<div ng-switch-when="ColorItem"
+							ng-controller="ColorItemController">
 
-						<paper-slider class="hue" max="360" colorslide value="{{hue}}"></paper-slider>
+							<md-radio-group ng-model="on" ng-change="setOn(on)">
 
-						<div class="hue-bg"></div>
+							<md-radio-button value="ON">ON</md-radio-button> <md-radio-button
+								value="OFF">OFF</md-radio-button> </md-radio-group>
 
-						<paper-slider class="brightness" pin slide value="{{brightness}}"></paper-slider>
+							<md-slider min="0" max="100" ng-model="brightness"
+								ng-change="setBrightness(brightness)"></md-slider>
 
-						<paper-radio-group ng-model="item.state" switch
-							ng-click="toggleSwitch($event)"> <paper-radio-button
-							name="ON" label="ON"></paper-radio-button> <paper-radio-button
-							name="OFF" label="OFF"></paper-radio-button></paper-radio-group>
-					</div>
-					<div ng-switch-when="GroupItem">
-						<paper-button raisedButton="" label="Show Group"
-							ng-click="navigateTo(item.name)"></paper-button>
-					</div>
-					<div ng-switch-default ng-controller="DefaultItemController">
-						<h1 contenteditable="true" editableitemstate>{{item.state}}</h1>
+							<md-slider class="hue" flex min="0" max="360" ng-model="hue"
+								ng-change="setHue(hue)"></md-slider>
+						</div>
+						<div ng-switch-when="GroupItem">
+							<md-button class="md-raised" ng-click="navigateTo(item.name)">Show
+							Group</md-button>
+						</div>
+						<div ng-switch-default ng-controller="DefaultItemController">
+							<h1 class="state" contenteditable="true" editableitemstate>{{getStateText(member)}}</h1>
+						</div>
 					</div>
 				</div>
 			</div>

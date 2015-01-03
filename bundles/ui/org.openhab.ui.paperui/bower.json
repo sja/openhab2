@@ -1,0 +1,25 @@
+{
+  "name": "org.openhab.ui.paperui",
+  "version": "2.0.0-alpha1",
+  "homepage": "https://github.com/dnobel/openhab2",
+  "authors": [
+    "Dennis Nobel <dennis@dnobel.de>"
+  ],
+  "description": "Paper UI",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "web/js/lib/",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-material": "~0.6.1",
+    "angular-resource": "~1.3.8",
+    "angular-route": "~1.3.8",
+    "sprintf": "~1.0.2"
+  }
+}
