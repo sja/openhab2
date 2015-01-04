@@ -4,6 +4,11 @@
 
 /* Control */
 
+.items {
+	min-height: 350px;
+}
+
+
 .items .item h3 {
 	margin: 5px 0px;
 }
@@ -34,7 +39,7 @@
 }
 
 .thing-type-choose {
-	margin-top: -40px;
+	margin-top: -20px;
 }
 
 .thing-type-choose .bindings {
@@ -99,4 +104,10 @@
 
 .thing-configure .parameter {
 	
+}
+
+/* Home Groups */
+
+.homeGroup.fab-item h3 {
+	line-height: 55px;
 }

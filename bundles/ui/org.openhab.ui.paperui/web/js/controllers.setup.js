@@ -1,15 +1,10 @@
 angular.module('SmartHomeManagerApp.controllers.setup', 
-[]).controller('SetupPageController', function($scope, $routeParams, $location) {
-    $scope.currentTab = $routeParams.tab ? $routeParams.tab : 'inbox';
-    $scope.action = $routeParams.action;
-    $scope.args = [];
-    $scope.args.push($routeParams.arg1)
-    $scope.tabs = [ 'inbox', 'discovery' ];
+[]).controller('SetupPageController', function($scope, $location) {
     $scope.navigateTo = function(path) {
-        $location.path('inbox/' + path);
+        $location.path('setup/' + path);
     }
 }).controller('InboxController', function($scope, $timeout, $mdDialog, inboxService, discoveryResultRepository, toastService) {
-	$scope.subtitle = 'Inbox';
+	$scope.setSubtitle(['Search']);
     $scope.approve = function(thingUID, event) {
     	$mdDialog.show({
 			controller : 'ApproveInboxEntryDialogController',
@@ -34,7 +29,7 @@ angular.module('SmartHomeManagerApp.controllers.setup',
             $scope.getAll();
         });
     };
-    $scope.remove = function(thingUID) {
+    $scope.remove = function(thingUID, event) {
     	var discoveryResult = discoveryResultRepository.find(function(discoveryResult) {
 			return discoveryResult.thingUID === thingUID;
 		});
@@ -112,7 +107,8 @@ angular.module('SmartHomeManagerApp.controllers.setup',
 		$mdDialog.hide(label);
 	}
 }).controller('ManualSetupChooseController', function($scope, bindingRepository, thingTypeRepository, thingSetupService) {
-
+	$scope.setSubtitle(['Manual Setup']);
+	
 	$scope.currentBindingId = undefined;
 	$scope.setCurrentBindingId = function(bindingId) {
 		$scope.currentBindingId = bindingId;
@@ -121,7 +117,10 @@ angular.module('SmartHomeManagerApp.controllers.setup',
     bindingRepository.getAll(function(data) {
 	});
    
-}).controller('ManualSetupConfigureController', function($scope, toastService, bindingRepository, thingTypeRepository, thingSetupService) {
+}).controller('ManualSetupConfigureController', function($scope, $routeParams, $mdDialog, toastService, 
+		bindingRepository, thingTypeRepository, thingSetupService, homeGroupRepository) {
+	
+	var thingTypeUID = $routeParams.thingTypeUID;
 	
 	function generateUUID() {
 	    var d = new Date().getTime();
@@ -138,9 +137,37 @@ angular.module('SmartHomeManagerApp.controllers.setup',
 		UID: undefined,
 		configuration : {},
 		item: {
-			label: undefined
+			label: undefined,
+			groupNames: []
 		}
 	}
+	
+	$scope.openGroupSelectionDialog = function(groupNames, event) {
+		$mdDialog.show({
+			controller : 'SelectGroupsDialogController',
+			templateUrl : 'partials/dialog.groupselection.html',
+			targetEvent : event,
+			locals: {
+				groupNames: groupNames
+			}
+		}).then(function(selectedGroupNames) {
+			$scope.thing.item.groupNames = selectedGroupNames;
+			$scope.setGroupLabels();
+		});
+	};
+	$scope.setGroupLabels = function() {
+		homeGroupRepository.getAll(function(homeGroups) {
+			var groupLabels = [];
+			for (var i = 0; i < homeGroups.length; i++) {
+				var homeGroup = homeGroups[i];
+				if($scope.thing.item.groupNames.indexOf(homeGroup.name) >= 0) {
+					groupLabels.push(homeGroup.label);
+				}
+			}
+			$scope.groups = groupLabels.join(', ');
+		});
+	}
+	$scope.setGroupLabels();
 	
 	$scope.addThing = function(thing) {
 		thingSetupService.add(thing, function() {
@@ -150,8 +177,9 @@ angular.module('SmartHomeManagerApp.controllers.setup',
 	};
 	
 	thingTypeRepository.getOne(function(thingType) {
-    	return thingType.UID === $scope.args[0];
+    	return thingType.UID === thingTypeUID;
     },function(thingType) {
+    	$scope.setTitle('Configure ' + thingType.label);
 		$scope.thingType = thingType;
 		$scope.thing.UID = thingType.UID + ':' + generateUUID();
 		$.each($scope.thingType.configParameters, function(i, parameter) {

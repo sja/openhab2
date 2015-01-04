@@ -1,9 +1,13 @@
 var DataCache = function($q, $rootScope, remoteService, dataType) {
 	var self = this;
-	this.getAll = function(callback) {
+	var dirty = false;
+	this.setDirty = function() {
+		this.dirty = true;
+	}
+	this.getAll = function(callback, refresh) {
 		var deferred = $q.defer();
 		remoteService.getAll(function(data) {
-			if(data.length != $rootScope.data[dataType].length) {
+			if((data.length != $rootScope.data[dataType].length) || self.dirty || refresh) {
 				$rootScope.data[dataType] = data;
 				deferred.resolve(data);
 			} else {
@@ -11,7 +15,7 @@ var DataCache = function($q, $rootScope, remoteService, dataType) {
 			}
 		});
         deferred.promise.then(function(res) {
-        	if(callback) {
+        	if(callback && res !== 'No update') {
         		return callback(res);
         	} else {
         		return;
@@ -19,7 +23,7 @@ var DataCache = function($q, $rootScope, remoteService, dataType) {
         }, function(res) {
         	return;
         }, function(res) {
-        	if(callback && res !== 'No update') {
+        	if(callback) {
         		return callback(res);
         	} else {
         		return;
@@ -28,12 +32,12 @@ var DataCache = function($q, $rootScope, remoteService, dataType) {
         deferred.notify($rootScope.data[dataType]);
         return deferred.promise;
 	};
-	this.getOne = function(condition, callback) {
+	this.getOne = function(condition, callback, refresh) {
 		var element = self.find(condition);
-		if(element != null) {
+		if(element != null && !this.dirty && !refresh) {
 			callback(element);
 		} else {
-			self.getAll().then(function(res) {
+			self.getAll(null, true).then(function(res) {
 				if(callback) {
 					callback(self.find(condition));
 	        		return;
@@ -87,5 +91,10 @@ angular.module('SmartHomeManagerApp.services.repositories', []).factory('binding
 		function($q, $rootScope, thingSetupService) {
 	var dataCache = new DataCache($q, $rootScope, thingSetupService, 'things')
 	$rootScope.data.things = [];
+	return dataCache;
+}).factory('homeGroupRepository', 
+		function($q, $rootScope, groupSetupService) {
+	var dataCache = new DataCache($q, $rootScope, groupSetupService, 'homeGroups')
+	$rootScope.data.homeGroups = [];
 	return dataCache;
 });

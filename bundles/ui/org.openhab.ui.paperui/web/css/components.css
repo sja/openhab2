@@ -51,11 +51,7 @@
 }
 
 .md-fab, .md-fab:active, .md-fab:focus, .md-fab:hover {
-	background-color: white !important;
-}
-
-.md-fab.green {
-	background-color: green !important;
+	background-color: #4CAF50 !important;
 	color: white;
 }
 
@@ -97,6 +93,10 @@ md-tabs.md-default-theme md-tab:focus {
 
 md-tabs.md-default-theme md-tab .md-ripple-container {
 	color: white;
+}
+
+md-tabs.md-default-theme .md-header {
+	background-color: #01324D;
 }
 
 /* Radio Button */
@@ -220,6 +220,17 @@ md-slider.md-default-theme.hue .md-thumb:after {
 	color: #777;
 }
 
+/* Card Container (TODO: not used yet) */
+
+.card-container {
+	background: white;
+	position: relative;
+	border: 1px solid #DDD;
+	border-radius: 2px;
+	margin-bottom: 10px;
+	margin-top: -80px;
+}
+
 /* Fab Item / List Item */
 
 .fab-item, .list-item {
@@ -250,8 +261,11 @@ md-slider.md-default-theme.hue .md-thumb:after {
 	min-height: 60px;
 }
 
-.fab-item .item-content .actions{
-
+.fab-item .item-content .actions, .list-item .actions {
+	position: absolute;
+	top: 7px;
+	right: 0px;
+	background: white;
 }
 
 .fab-item .circle {
@@ -281,31 +295,36 @@ md-slider.md-default-theme.hue .md-thumb:after {
 md-input-group.md-default-theme input, md-input-group.md-default-theme textarea {
 	display: block;
 	width: 100%;
-}
-
-md-input-group.md-default-theme input, md-input-group.md-default-theme textarea {
 	color: inherit;
-	border-color: #999;
+	font-size: 18px;
+	line-height: 40px;
 }
 
 .form-group p.hint {
 	margin-top: -10px;
-	color: #666;
+	color: #777;
 }
 
 .form-group label {
 	font-weight: normal;
-	font-size: 16px;
+	font-size: 18px;
 	margin-bottom: 0px;
+	text-transform: uppercase;
+	color: #AAA;
 }
 
 .form-group label.control-label {
 	transform: translate3d(-6px,4px,0) scale(0.75);
-	color: #222;
+	color: #999;
+}
+
+.md-input-group label, md-input-group label {
+	-webkit-transform: translate3d(0,36px,0);
+	transform: translate3d(0,36px,0);
 }
 
 .form-group .md-input-focused label, .form-group .md-input-has-value label {
-	color: #222 !important;
+	color: #999 !important;
 }
 
 select.form-control {

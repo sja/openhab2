@@ -1,13 +1,12 @@
-<md-tabs> <md-tab ng-repeat="tab in tabs"
-	ng-click="navigateTo(tab)" label="{{tab}}"
-	md-active="currentTab === tab" /></md-tabs>
+<md-tabs md-selected="selectedTabIndex"> <md-tab ng-repeat="tab in tabs" label="{{tab}}"/></md-tabs>
 
-<section id="main" class="container control">
-	<div ng-controller="ControlController" class="items row">
+<section id="main" class="container control tabpanel-container">
+	<div ng-controller="ControlController" role="tabpanel"
+		class="tabpanel items row" md-swipe-left="next()"
+		md-swipe-right="prev()">
 		<div class="col-md-4 col-sm-6 col-xs-12 item-wrapper"
-			ng-repeat="item in items[currentTab]">
-			<div ng-if="item.tags.indexOf('thing') >= 0"
-				class="card item {{item.type}}" data-item-name="{{item.name}}">
+			ng-repeat="item in items[tabs[selectedTabIndex]]">
+			<div class="card item {{item.type}}" data-item-name="{{item.name}}">
 				<div class="ibadge">
 					<span class="icon-x">
 				</div>

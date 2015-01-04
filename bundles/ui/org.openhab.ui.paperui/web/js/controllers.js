@@ -1,5 +1,5 @@
-angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController', function($scope, eventService, toastService) {
-    $scope.getSchemeClass = function() {
+angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController', function($rootScope, $scope, eventService, toastService) {
+	$scope.getSchemeClass = function() {
         var theme = localStorage.getItem('theme');
         if (theme) {
             return 'theme-' + theme;
@@ -10,6 +10,28 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
     $scope.isEshTheme = function() {
         return $scope.getSchemeClass() === 'theme-white';
     }
+    $scope.setTitle = function(title) {
+    	$rootScope.title = title;
+	}
+    $scope.subtitles = [];
+    $scope.setSubtitle = function(args) {
+    	$scope.subtitles = [];
+    	$.each(args, function(i, subtitle) {
+			$scope.subtitles.push(subtitle);
+		})
+	}
+    $rootScope.$on('$routeChangeStart', function(){
+    	$scope.subtitles = [];
+    });
+    $scope.generateUUID = function() {
+	    var d = new Date().getTime();
+	    var uuid = 'xxxxxxxx'.replace(/[x]/g, function(c) {
+	        var r = (d + Math.random()*16)%16 | 0;
+	        d = Math.floor(d/16);
+	        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+	    });
+	    return uuid;
+	};
 
     var numberOfInboxEntries = -1;
     eventService.onEvent('smarthome/inbox/added/*', function(topic, discoveryResult) {
@@ -17,22 +39,33 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
 	});
 }).controller('ControlPageController', function($scope, $routeParams, $location, $timeout, itemService) {
     $scope.items = [];
-    $scope.currentTab = $routeParams.tab ? $routeParams.tab : 'All';
+    $scope.selectedTabIndex = 0;
     $scope.tabs = [ 'All' ];
 
-    $scope.navigateTo = function(path) {
-        $location.path('control/' + path);
-    }
+    $scope.next = function() {
+    	var newIndex = $scope.selectedTabIndex + 1;
+    	if(newIndex > ($scope.tabs.length - 1)) {
+    		newIndex = 0;
+    	}
+    	$scope.selectedTabIndex = newIndex;
+	}
+    $scope.prev = function() {
+    	var newIndex = $scope.selectedTabIndex - 1;
+    	if(newIndex < 0) {
+    		newIndex = $scope.tabs.length - 1;
+    	}
+    	$scope.selectedTabIndex = newIndex;
+	}
 
     itemService.getAll(function(items) {
         $scope.items['All'] = items;
         for (var int = 0; int < items.length; int++) {
             var item = items[int];
             if (item.type === 'GroupItem') {
-                if(item.tags.indexOf("room") > -1) {
-                    $scope.tabs.push(item.name);
+                if(item.tags.indexOf("home_group") > -1) {
+                    $scope.tabs.push(item.label);
                 }
-                $scope.items[item.name] = item.members;
+                $scope.items[item.label] = item.members;
             }
         }
         $scope.$watch('items', function(value) {
@@ -63,13 +96,22 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
         return $('select#' + property + ' option:selected').val();
     }
 }).controller('NavController', function($scope, $location) {
+    $scope.opened = undefined;
+    $scope.open = function(viewLocation) {
+    	$scope.opened = viewLocation;
+    }
     $scope.isActive = function(viewLocation) {
         var active = (viewLocation === $location.path().split('/')[1]);
+        return active || $scope.opened === viewLocation;
+    }
+    $scope.isSubActive = function(viewLocation) {
+        var active = (viewLocation === $location.path().split('/')[2]);
         return active;
     }
     $scope.$on('$routeChangeSuccess', function() {
         $('body').removeClass('sml-open');
         $('.mask').remove();
+        $scope.opened = undefined;
     });
 }).controller('ControlController', function($scope, $timeout, itemService) {
 	$scope.getItemName = function(itemName) {
@@ -219,4 +261,29 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
     var hexColor =  $scope.getHexColor();
     $($element).find('.hue .md-thumb').css('background-color', hexColor);
 
+}).controller('SelectGroupsDialogController', function($scope, $mdDialog, groupNames, homeGroupRepository) {
+	$scope.homeGroups = [];
+	$scope.groupNames = [];
+	homeGroupRepository.getAll(function(homeGroups) {
+		$.each(homeGroups, function(i, homeGroup) {
+			if(groupNames.indexOf(homeGroup.name) >= 0) {
+				$scope.groupNames[homeGroup.name] = true;
+			} else {
+				$scope.groupNames[homeGroup.name] = false;
+			}
+		});
+		$scope.homeGroups = homeGroups;
+	});
+	$scope.close = function() {
+		$mdDialog.cancel();
+	}
+	$scope.ok = function(groupNames) {
+		var selectedGroupNames = [];
+		for (var gropuName in groupNames) {
+			if(groupNames[gropuName]) {
+				selectedGroupNames.push(gropuName);
+			}
+		}
+		$mdDialog.hide(selectedGroupNames);
+	}
 });

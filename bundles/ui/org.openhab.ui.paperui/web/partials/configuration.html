@@ -1,9 +1,3 @@
-<md-tabs> <md-tab ng-click="navigateTo('bindings')"
-	label="Bindings" md-active="currentTab === 'bindings'"></md-tab> <md-tab
-	ng-click="navigateTo('groups')" label="Groups"
-	md-active="currentTab === 'groups'"></md-tab> <md-tab
-	ng-click="navigateTo('things')" label="Things"
-	md-active="currentTab === 'things'"></md-tab></md-tabs>
 <section id="main">
 	<div class="bindings tab-panel" ng-if="currentTab === 'bindings'">
 		<div class="header-toolbar">
@@ -11,8 +5,6 @@
 		</div>
 		<div class="section-header">
 			<div class="container">
-				<h1>Installed Bindings</h1>
-				<p>Lists all installed bindings</p>
 				<div class="toolbar">
 					<md-button class="md-fab md-icon-download"
 						ng-click="installBinding()"></md-button>
@@ -39,6 +31,36 @@
 			</div>
 		</div>
 	</div>
+	<div class="groups white-bg" ng-if="currentTab === 'groups' && !action"
+		ng-controller="GroupController">
+		<div class="header-toolbar">
+			<md-button class="md-icon-refresh" ng-click="refresh()"></md-button>
+		</div>
+		<div class="section-header">
+			<div class="container">
+				<div class="toolbar">
+					<md-button class="md-fab md-icon-add" ng-click="add()"></md-button>
+				</div>
+			</div>
+		</div>
+		<div class="container">
+			<div class="groups">
+				<div class="clickable" ng-repeat="homeGroup in data.homeGroups">
+					<div class="homeGroup fab-item text-left">
+						<div class="circle">{{homeGroup.label.substring(0,1)}}</div>
+						<div class="item-content">
+							<h3>{{homeGroup.label}}</h3>
+							<div class="actions">
+								<md-button class="md-raised md-icon-edit"></md-button>
+								<md-button class="md-raised md-icon-delete" ng-click="remove(homeGroup, $event)"></md-button>
+							</div>
+						</div>
+						<hr class="border-line" ng-show="!$last" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 	<div class="things white-bg" ng-if="currentTab === 'things' && !action"
 		ng-controller="ThingController">
 		<div class="header-toolbar">
@@ -46,11 +68,9 @@
 		</div>
 		<div class="section-header">
 			<div class="container">
-				<h1>Configured Things</h1>
-				<p>List all configured things</p>
 				<div class="toolbar">
 					<md-button class="md-fab md-icon-add"
-						ng-click="navigateFromRoot('inbox')"></md-button>
+						ng-click="navigateFromRoot('setup/search')"></md-button>
 				</div>
 			</div>
 		</div>
@@ -68,8 +88,12 @@
 							</h3>
 							<p>{{getThingType(thing.UID).label}}</p>
 							<p>{{thing.UID}}</p>
+							<div class="actions">
+								<md-button class="md-raised md-icon-edit"  ng-click="navigateTo('things/configure/' + thing.UID)"></md-button>
+								<md-button class="md-raised md-icon-delete" ng-click="remove(thing, $event)"></md-button>
+							</div>
 						</div>
-						<hr class="border-line" />
+						<hr class="border-line" ng-show="!$last" />
 					</div>
 				</div>
 			</div>
@@ -78,35 +102,30 @@
 	<div class="thing-view white-bg"
 		ng-if="currentTab === 'things' && action === 'view'"
 		ng-controller="ViewThingController">
+		<div class="header-toolbar">
+			<md-button class="md-icon-delete" ng-click="remove(thing, $event)"></md-button>
+			<md-button class="md-icon-close" ng-click="navigateTo('things')"></md-button>
+		</div>
 		<div class="section-header">
 			<div class="container">
-				<h1>{{thing.item.label}}</h1>
-				<p>
-					{{thingType.label}} <small>{{thing.UID}}</small>
-				</p>
 				<div class="toolbar">
-					<md-button class="md-fab md-icon-arrow-back"
-						ng-click="navigateTo('things')"></md-button>
+					<md-button class="md-fab md-icon-edit"
+						ng-click="navigateTo('things/configure/' + thing.UID)"></md-button>
 				</div>
 			</div>
 		</div>
 		<div class="container">
-			<p>
-				<md-button class="md-raised" ng-click="edit(thing, $event)"> <span class="md-icon-edit"></span>Edit</md-button>
-				<md-button class="md-raised"> <span
-					class="md-icon-settings"></span>Configuration</md-button>
-				<md-button class="md-raised" ng-click="remove(thing, $event)">
-				<span class="md-icon-delete"></span>Remove</md-button>
-			</p>
+			<h3>{{thingType.label}}</h3>
 			<p>{{thingType.description}}</p>
 			<h2>Channels</h2>
 			<div class="channels">
 				<div class="channel fab-item" ng-repeat="channel in thing.channels">
-					<paper-fab ng-if="!channel.boundItem" icon="add"
-						ng-click="link(thing.UID, channel.id)"></paper-fab>
-					<div class="circle icon-link clickable" ng-if="channel.boundItem"
-						ng-click="navigateTo('items/view/' + channel.boundItem)"
-						icon="add"></div>
+					<md-button ng-if="!channel.boundItem"
+						class="md-fab md-icon-radio-button-off"
+						ng-click="enableChannel(thing.UID, channel.id)"></md-button>
+					<md-button ng-if="channel.boundItem"
+						class="md-fab md-icon-radio-button-on"
+						ng-click="disableChannel(thing.UID, channel.id)"></md-button>
 					<div class="item-content">
 						<h3>
 							{{getChannelById(channel.id).label}} <small>{{channel.id}}</small>
@@ -118,5 +137,23 @@
 				</div>
 			</div>
 		</div>
+	</div>
+	<div class="thing-configure white-bg"
+		ng-if="currentTab === 'things' && action === 'configure'"
+		ng-controller="EditThingConfigurationController">
+		<div class="header-toolbar">
+			<md-button class="md-icon-close"
+				ng-click="navigateTo('things/view/' + thing.UID)"></md-button>
+		</div>
+		<div class="section-header">
+			<div class="container">
+				<div class="toolbar">
+					<md-button title="Save" ng-click="update(thing)"
+						class="md-fab md-icon-check"></md-button>
+				</div>
+			</div>
+		</div>
+
+		<div ng-include="'partials/include.thingconfig.html'"></div>
 	</div>
 </section>

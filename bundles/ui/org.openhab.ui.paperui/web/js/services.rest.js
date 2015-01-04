@@ -237,6 +237,12 @@ angular.module('SmartHomeManagerApp.services.rest', []).factory('itemService', f
                 'Content-Type' : 'application/json'
             }
         },
+        update : {
+            method : 'PUT',
+            headers : {
+                'Content-Type' : 'application/json'
+            }
+        },
         getAll: {
         	method : 'GET',
             isArray : true
@@ -247,6 +253,20 @@ angular.module('SmartHomeManagerApp.services.rest', []).factory('itemService', f
                 thingUID : '@thingUID'
             },
             url : '/rest/setup/things/:thingUID'
+        },
+        enableChannel : {
+            method : 'PUT',
+            params : {
+                channelUID : '@channelUID'
+            },
+            url : '/rest/setup/things/channels/:channelUID'
+        },
+        disableChannel : {
+            method : 'DELETE',
+            params : {
+                channelUID : '@channelUID'
+            },
+            url : '/rest/setup/things/channels/:channelUID'
         },
     });
 }).factory('labelSetupService', function($resource) {
@@ -261,5 +281,25 @@ angular.module('SmartHomeManagerApp.services.rest', []).factory('itemService', f
                 'Content-Type' : 'text/plain'
             }
         }
+    });
+}).factory('groupSetupService', function($resource) {
+    return $resource('/rest/setup/groups', {}, {
+    	add : {
+            method : 'POST',
+            headers : {
+                'Content-Type' : 'application/json'
+            }
+        },
+        remove : {
+            method : 'DELETE',
+            params : {
+                itemName : '@itemName'
+            },
+            url : '/rest/setup/groups/:itemName'
+        },
+        getAll: {
+        	method : 'GET',
+            isArray : true
+        },
     });
 });

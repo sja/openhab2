@@ -1,18 +1,11 @@
-<md-tabs> <md-tab ng-click="navigateTo('inbox')"
-	label="Search" md-active="currentTab === 'inbox'"></md-tab> <md-tab
-	ng-click="navigateTo('manual-setup/choose')" label="Manual Setup"
-	md-active="currentTab === 'manual-setup'"></md-tab> </md-tabs>
-
-<section id="main">
+<section id="main" ng-controller="SetupPageController">
 	<div ng-controller="InboxController" class="white-bg inbox"
-		ng-if="currentTab === 'inbox'">
+		ng-if="page === 'search' || !page">
 		<div class="header-toolbar">
 			<md-button class="md-icon-refresh" ng-click="getAll()"></md-button>
 		</div>
 		<div class="section-header">
 			<div class="container">
-				<h1>Discovered Things</h1>
-				<p>The inbox lists all available things in your home. You can trigger a scan to search for new devices.</p>
 				<div class="toolbar">
 					<md-button title="Scan"
 						class="md-fab md-icon-settings-input-antenna"
@@ -21,7 +14,8 @@
 			</div>
 		</div>
 		<div class="container">
-			<div class="fab-item" ng-repeat="discoveryResult in data.discoveryResults">
+			<div class="fab-item"
+				ng-repeat="discoveryResult in data.discoveryResults">
 				<md-button title="Refresh" class="md-fab md-icon-done green"
 					ng-click="approve(discoveryResult.thingUID, $event)"></md-button>
 				<div class="item-content">
@@ -33,29 +27,29 @@
 						<md-button class="md-raised md-icon-block"
 							ng-click="ignore(discoveryResult.thingUID)"></md-button>
 						<md-button class="md-raised md-icon-delete"
-							ng-click="remove(discoveryResult.thingUID)"></md-button>
+							ng-click="remove(discoveryResult.thingUID, $event)"></md-button>
 					</div>
 				</div>
 				<hr class="border-line" ng-show="!$last" />
+				<p class="text-center">
+					Thing not found?
+					<md-button class="" ng-click="navigateTo('manual-setup/choose')">Manual
+					Setup</md-button>
+				</p>
 			</div>
 			<div class="text-center" ng-if="data.discoveryResults.length == 0">
 				<h3>Inbox is empty.</h3>
 				<p>Scan for things or add your thing manually.</p>
 				<md-button class="md-raised" ng-click="showScanDialog($event)">Scan</md-button>
 				or
-				<md-button class="md-raised" ng-click="navigateTo('manual-setup/choose')">Manual
+				<md-button class="md-raised"
+					ng-click="navigateTo('manual-setup/choose')">Manual
 				Setup</md-button>
 			</div>
 		</div>
 	</div>
 	<div ng-controller="ManualSetupChooseController" class="white-bg"
-		ng-if="currentTab === 'manual-setup' && action === 'choose'">
-		<div class="section-header">
-			<div class="container">
-				<h1>Manual Setup</h1>
-				<p>Choose a Thing to add</p>
-			</div>
-		</div>
+		ng-if="page === 'manual-setup' && path[3] === 'choose'">
 		<div class="container thing-type-choose">
 			<div layout="row">
 				<div flex="35" class="bindings">
@@ -86,38 +80,22 @@
 			</div>
 		</div>
 	</div>
-	<div ng-controller="ManualSetupConfigureController" class="thing-configure white-bg"
-		ng-if="currentTab === 'manual-setup' && action === 'configure'"
-		ng-controller="AddThingController">
+	<div ng-controller="ManualSetupConfigureController"
+		class="thing-configure white-bg"
+		ng-if="page === 'manual-setup' && path[3] === 'configure'">
+		<div class="header-toolbar">
+			<md-button class="md-icon-close"
+				ng-click="navigateTo('manual-setup/choose')"></md-button>
+		</div>
 		<div class="section-header">
 			<div class="container">
-				<h1>
-					Configure {{thingType.label}} <small>{{thingType.UID}}</small>
-				</h1>
-				<p>Configure properties for the {{thingType.label}} and click save to add it.</p>
-				<div class="action-toolbar">
-					<md-button title="Add" ng-click="addThing(thing)" class="green">
-					<span class="md-icon-check"></span> Save</md-button>
-					<md-button title="Back" class="white"
-						ng-click="navigateTo('manual-setup/choose')">Cancel</md-button>
+				<div class="toolbar">
+					<md-button title="Add" ng-click="addThing(thing)"
+						class="md-fab md-icon-check">
 				</div>
 			</div>
 		</div>
-		<div class="container">
-			<div class="form-group parameter">
-				<md-text-float label="Thing Name" ng-model="thing.item.label" class="long"></md-text-float>
-				<p class="hint">
-					<small>Specify the name of the thing</small>
-				</p>
-			</div>
-			<div class="form-group parameter"
-				ng-repeat="parameter in thingType.configParameters">
-				<md-text-float label="{{parameter.label}}"
-					ng-model="thing.configuration[parameter.name]"> </md-text-float>
-				<p class="hint">
-					<small>{{parameter.description}}</small>
-				</p>
-			</div>
-		</div>
+
+		<div ng-include="'partials/include.thingconfig.html'"></div>
 	</div>
 </section>
