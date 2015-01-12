@@ -25,7 +25,7 @@ angular.module('SmartHomeManagerApp.services', []).config(function($httpProvider
 	var eventSrc = new EventSource('/rest/events');    
 	return new function() {
 		this.onEvent = function(topic, callback) {
-			topicRegex = topic.replace('/', '\/').replace('*', '.*');
+			var topicRegex = topic.replace('/', '\/').replace('*', '.*');
 			eventSrc.addEventListener('message', function (event) {
 		        var data = JSON.parse(event.data);
 		        if(data.topic.match(topicRegex)) {

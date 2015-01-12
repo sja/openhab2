@@ -97,4 +97,9 @@ angular.module('SmartHomeManagerApp.services.repositories', []).factory('binding
 	var dataCache = new DataCache($q, $rootScope, groupSetupService, 'homeGroups')
 	$rootScope.data.homeGroups = [];
 	return dataCache;
+}).factory('itemRepository', 
+		function($q, $rootScope, itemService) {
+	var dataCache = new DataCache($q, $rootScope, itemService, 'items')
+	$rootScope.data.items = [];
+	return dataCache;
 });

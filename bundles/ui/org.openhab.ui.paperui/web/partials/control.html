@@ -1,56 +1,128 @@
-<md-tabs md-selected="selectedTabIndex"> <md-tab ng-repeat="tab in tabs" label="{{tab}}"/></md-tabs>
-
-<section id="main" class="container control tabpanel-container">
-	<div ng-controller="ControlController" role="tabpanel"
-		class="tabpanel items row" md-swipe-left="next()"
-		md-swipe-right="prev()">
-		<div class="col-md-4 col-sm-6 col-xs-12 item-wrapper"
-			ng-repeat="item in items[tabs[selectedTabIndex]]">
-			<div class="card item {{item.type}}" data-item-name="{{item.name}}">
-				<div class="ibadge">
-					<span class="icon-x">
-				</div>
-				<div class="clabel">
-					<h3>{{item.label}}</h3>
-				</div>
-				<div class="" ng-repeat="member in item.members">
-					<div ng-switch on="member.type" class="icontrol cbody">
-						<div ng-switch-when="SwitchItem"
-							ng-controller="SwitchItemController">
-							<md-radio-group ng-model="member.state"
-								ng-change="toggle(item.state)"> <md-radio-button
-								value="ON">ON</md-radio-button> <md-radio-button value="OFF">OFF</md-radio-button>
-							</md-radio-group>
-						</div>
-						<div ng-switch-when="DimmerItem"
-							ng-controller="DimmerItemController">
-							<h1>{{item.state}}%</h1>
-							<md-radio-group ng-model="on" ng-change="setOn(on)">
-							<md-radio-button value="ON">ON</md-radio-button> <md-radio-button
-								value="OFF">OFF</md-radio-button> </md-radio-group>
-							<md-slider flex min="0" max="100" ng-model="member.state"
-								ng-change="setBrightness(item.state)" />
-						</div>
-						<div ng-switch-when="ColorItem"
-							ng-controller="ColorItemController">
-
-							<md-radio-group ng-model="on" ng-change="setOn(on)">
-
-							<md-radio-button value="ON">ON</md-radio-button> <md-radio-button
-								value="OFF">OFF</md-radio-button> </md-radio-group>
-
-							<md-slider min="0" max="100" ng-model="brightness"
-								ng-change="setBrightness(brightness)"></md-slider>
-
-							<md-slider class="hue" flex min="0" max="360" ng-model="hue"
-								ng-change="setHue(hue)"></md-slider>
-						</div>
-						<div ng-switch-when="GroupItem">
-							<md-button class="md-raised" ng-click="navigateTo(item.name)">Show
-							Group</md-button>
-						</div>
-						<div ng-switch-default ng-controller="DefaultItemController">
-							<h1 class="state" contenteditable="true" editableitemstate>{{getStateText(member)}}</h1>
+<section id="main" class="control">
+	<md-tabs md-stretch-tabs="always" class="section-tabs"
+		md-selected="selectedTabIndex"> <md-tab
+		ng-repeat="tab in tabs" label="{{tab.label}}" /></md-tabs>
+	<div class="container">
+		<div ng-controller="ControlController" class="items row"
+			md-swipe-left="next()" md-swipe-right="prev()">
+			<div class="col-md-4 col-sm-6 col-xs-12 item-wrapper"
+				ng-repeat="groupItem in getItem(tabs[selectedTabIndex].name).members">
+				<div class="card item {{groupItem.type}}"
+					data-item-name="{{groupItem.name}}">
+					<div class="ibadge">
+						<span class="icon-x">
+					</div>
+					<div class="clabel">
+						<h3>{{groupItem.label}}</h3>
+					</div>
+					<div class="" ng-repeat="item in groupItem.members">
+						<div ng-switch on="item.type" class="icontrol">
+							<div ng-switch-when="SwitchItem"
+								ng-controller="SwitchItemController">
+								<div layout="row" layout-align="start center"
+									class="dimmer-widget">
+									<div flex="40">
+										<p class="icon-switch">Switch</p>
+									</div>
+									<div flex="60" layout="row" layout-align="end center"
+										class="dimmer-widget">
+										<md-switch ng-model="item.state" ng-change="setOn(item.state)"
+											ng-true-value="'ON'" ng-false-value="'OFF'"></md-switch>
+									</div>
+								</div>
+							</div>
+							<div ng-switch-when="DimmerItem"
+								ng-controller="DimmerItemController">
+								<div layout="row" layout-align="start center"
+									class="dimmer-widget">
+									<div flex="40">
+										<p class="icon-brightness-contrast">Dimmer</p>
+									</div>
+									<div flex="60" layout="row" layout-align="end center"
+										class="dimmer-widget">
+										<h1>{{item.state}}%</h1>
+									</div>
+								</div>
+								<md-slider style="height: 40px;" flex min="0" max="100" ng-model="item.state"
+									ng-change="setBrightness(item.state)"></md-slider>
+								<hr />
+								<div layout="row" layout-align="start center"
+									class="dimmer-widget">
+									<div flex="40">
+										<p class="icon-switch">Switch</p>
+									</div>
+									<div flex="60" layout="row" layout-align="end center"
+										class="dimmer-widget">
+										<md-switch ng-model="on" ng-change="setOn(on)"
+											ng-true-value="'ON'" ng-false-value="'OFF'"></md-switch>
+									</div>
+								</div>
+							</div>
+							<div ng-switch-when="ColorItem"
+								ng-controller="ColorItemController">
+								<div layout="row" layout-align="start center"
+									class="dimmer-widget">
+									<div flex="40">
+										<p class="icon-droplet">Color</p>
+									</div>
+									<div flex="60" layout="column" layout-align="end center"
+										class="dimmer-widget">
+										<md-slider class="hue" flex min="0" max="360" ng-model="hue"
+											ng-change="setHue(hue)"></md-slider>
+									</div>
+								</div>
+								<hr />
+								<div layout="row" layout-align="start center"
+									class="dimmer-widget">
+									<div flex="40">
+										<p class="icon-brightness-contrast">Dimmer</p>
+									</div>
+									<div flex="60" layout="column" layout-align="end center"
+										class="dimmer-widget">
+										<md-slider flex min="0" max="100" ng-model="brightness"
+											ng-change="setBrightness(brightness)"></md-slider>
+									</div>
+								</div>
+								<hr />
+								<div layout="row" layout-align="start center"
+									class="dimmer-widget">
+									<div flex="40">
+										<p class="icon-switch">Switch</p>
+									</div>
+									<div flex="60" layout="row" layout-align="end center"
+										class="dimmer-widget">
+										<md-switch ng-model="on" ng-change="setOn(on)"
+											ng-true-value="'ON'" ng-false-value="'OFF'"></md-switch>
+									</div>
+								</div>
+							</div>
+							<div ng-switch-when="NumberItem">
+								<div layout="row" layout-align="start center">
+									<div flex="40" layout="row" layout-align="start center">
+										<p ng-class="getCategoryIcon(item.category)">{{getCategoryText(item.category)}}</p>
+									</div>
+									<div flex="60" layout="row" layout-align="end center">
+										<h1 class="state" contenteditable="true" editableitemstate>{{getStateText(item)}}</h1>
+									</div>
+								</div>
+								<div ng-if="!item.stateDescription.readOnly" layout="row"
+									layout-align="start center" class="number-control-widget">
+									<span flex="15" class="text-left">{{getMinText(item)}}</span>
+									<md-slider flex="70" min="{{item.stateDescription.minimum}}"
+										max="{{item.stateDescription.maximum}}"
+										step="{{item.stateDescription.step}}" ng-model="item.state"
+										md-discrete="true"></md-slider>
+									<span flex="15" class="text-right">{{getMaxText(item)}}</span>
+								</div>
+							</div>
+							<div ng-switch-when="GroupItem">
+								<md-button class="md-raised" ng-click="navigateTo(item.name)">Show
+								Group</md-button>
+							</div>
+							<div ng-switch-default ng-controller="DefaultItemController">
+								<h1 class="state" contenteditable="true" editableitemstate>{{getStateText(item)}}</h1>
+							</div>
+							<hr ng-if="!$last" />
 						</div>
 					</div>
 				</div>

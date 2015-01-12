@@ -52,7 +52,7 @@
 
 .md-fab, .md-fab:active, .md-fab:focus, .md-fab:hover {
 	background-color: #4CAF50 !important;
-	color: white;
+	color: white !important;
 }
 
 
@@ -120,9 +120,19 @@ md-radio-button.md-default-theme.md-checked .md-ink-ripple, md-switch.md-default
 	color: #01324D;
 }
 
+/* Switch */
+
+md-switch.md-default-theme.md-checked .md-thumb {
+	background-color: #01324D;
+}
+
+md-switch.md-default-theme.md-checked .md-bar {
+	background-color: rgb(158,158,158);
+}
+
 /* Slider */
 
-md-slider.md-default-theme .md-track-fill {
+md-slider.md-default-theme .md-track.md-track-fill {
 	background-color: #01324D;
 }
 
@@ -138,6 +148,7 @@ md-slider.md-default-theme .md-sign {
 md-slider.md-default-theme .md-sign:after {
 	border-top-color: #01324D;
 }
+
 
 /* Color Slider */
 
@@ -185,9 +196,9 @@ md-slider.md-default-theme.hue .md-thumb:after {
 .card {
 	background: white;
 	position: relative;
-	border: 1px solid #DDD;
 	border-radius: 2px;
 	margin-bottom: 10px;
+	box-shadow: 0px 2px 5px 0 rgba(0, 0, 0, 0.26);
 }
 
 .card .clabel {

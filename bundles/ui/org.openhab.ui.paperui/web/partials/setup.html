@@ -2,6 +2,7 @@
 	<div ng-controller="InboxController" class="white-bg inbox"
 		ng-if="page === 'search' || !page">
 		<div class="header-toolbar">
+			<md-button class="md-icon-add" ng-click="navigateTo('manual-setup/choose')"></md-button>
 			<md-button class="md-icon-refresh" ng-click="getAll()"></md-button>
 		</div>
 		<div class="section-header">
@@ -31,11 +32,6 @@
 					</div>
 				</div>
 				<hr class="border-line" ng-show="!$last" />
-				<p class="text-center">
-					Thing not found?
-					<md-button class="" ng-click="navigateTo('manual-setup/choose')">Manual
-					Setup</md-button>
-				</p>
 			</div>
 			<div class="text-center" ng-if="data.discoveryResults.length == 0">
 				<h3>Inbox is empty.</h3>

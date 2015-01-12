@@ -1,29 +1,16 @@
+function getThingTypeUID(thingUID) {
+	var segments = thingUID.split(':');
+	return segments[0] + ':' + segments[1];
+};
+    
 angular.module('SmartHomeManagerApp.controllers.configuration', 
-[]).controller('ConfigurationPageController', function($scope, $routeParams, $location) {
-    $scope.currentTab = $routeParams.tab ? $routeParams.tab : 'bindings';
-    $scope.action = $routeParams.action;
-    $scope.args = [];
-    $scope.args[0] = $routeParams.actionArg;
-    $scope.tabs = [ 'bindings', 'groups', 'things' ];
+[]).controller('ConfigurationPageController', function($scope, $location) {
     $scope.navigateTo = function(path) {
         $location.path('configuration/' + path);
     }
-    $scope.getThingType = function(thingUID) {
-        var segments = thingUID.split(':');
-        var thingTypeUID = segments[0] + ':' + segments[1];
-        if (!$scope.data.thingTypes) {
-            return;
-        }
-        return $.grep($scope.data.thingTypes, function(thingType, i) {
-            return thingTypeUID == thingType.UID;
-        })[0];
-    };
-    $scope.getThingTypeUID = function(thingUID) {
-        var segments = thingUID.split(':');
-        return segments[0] + ':' + segments[1];
-    };
 }).controller('BindingController', function($scope, $mdDialog, bindingRepository) {
 	$scope.setSubtitle(['Bindings']);
+	$scope.setHeaderText('Shows all installed bindings.');
 	$scope.refresh = function() {
 		bindingRepository.getAll();	
 	};
@@ -48,7 +35,8 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 		$mdDialog.hide();
 	}
 }).controller('GroupController', function($scope, $mdDialog, toastService, homeGroupRepository, groupSetupService) {
-	$scope.setSubtitle(['Groups']);
+	$scope.setSubtitle(['Home Groups']);
+	$scope.setHeaderText('Shows all configured Home Groups.');
 	$scope.getAll = function() {
 		homeGroupRepository.getAll();	
 	}
@@ -96,6 +84,7 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	}
 }).controller('ThingController', function($scope, $timeout, $mdDialog, thingTypeRepository, thingRepository, thingSetupService, toastService) {
 	$scope.setSubtitle(['Things']);
+	$scope.setHeaderText('Shows all configured Things.');
 	
 	thingTypeRepository.getAll();
 	thingRepository.getAll();
@@ -119,10 +108,11 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	    event.stopImmediatePropagation();
 	};
 	
-}).controller('ViewThingController', function($scope, $mdDialog, toastService, thingTypeRepository, thingRepository, thingSetupService) {
+}).controller('ViewThingController', function($scope, $mdDialog, toastService, thingTypeRepository, 
+		thingRepository, thingSetupService) {
 	
-	var thingUID = $scope.args[0];
-	var thingTypeUID = $scope.getThingTypeUID(thingUID);
+	var thingUID = $scope.path[4];
+	var thingTypeUID = getThingTypeUID(thingUID);
 	
 	$scope.thing;
 	$scope.thingType;
@@ -187,12 +177,15 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 		return thingType.UID === thingTypeUID;
 	}, function(thingType) {
 		$scope.thingType = thingType;
+		$scope.setHeaderText(thingType.description);
 	});
-}).controller('EditThingConfigurationController', function($scope, $mdDialog, toastService, 
+}).controller('EditThingController', function($scope, $mdDialog, toastService, 
 		thingTypeRepository, thingRepository, thingSetupService, homeGroupRepository) {
 	
-	var thingUID = $scope.args[0];
-	var thingTypeUID = $scope.getThingTypeUID(thingUID);
+	$scope.setHeaderText('Click the \'Save\' button to apply the changes.');
+	
+	var thingUID = $scope.path[4];
+	var thingTypeUID = getThingTypeUID(thingUID);
 	
 	$scope.thing;
 	$scope.groups = [];
@@ -213,6 +206,20 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	};
 	
 	$scope.update = function(thing) {
+		for (var i = 0; i < $scope.thingType.configParameters.length; i++) {
+			var parameter = $scope.thingType.configParameters[i];
+			if(thing.configuration[parameter.name]) {
+				if(parameter.type === 'TEXT') {
+					// no conversation
+				} else if(parameter.type === 'BOOLEAN') {
+					thing.configuration[parameter.name] = new Boolean(thing.configuration[parameter.name]);
+				} else if(parameter.type === 'INTEGER' || parameter.type === 'DECIMAL') {
+					thing.configuration[parameter.name] = parseInt(thing.configuration[parameter.name]);
+				} else {
+					// no conversation
+				}
+			}
+		}
 		thingSetupService.update(thing, function() {
 			toastService.showDefaultToast('Thing updated');
 			$scope.navigateTo('things/view/' + thing.UID);

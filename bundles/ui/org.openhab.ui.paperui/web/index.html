@@ -20,9 +20,7 @@
 <link type="text/css"
 	href="js/lib/angular-material/angular-material.min.css"
 	rel="stylesheet"></link>
-<link type="text/css"
-	href="js/lib/angular-material/themes/red-theme.css" rel="stylesheet"></link>
-
+	
 <!-- custom css files -->
 <!--link type="text/css" href="css/main.css" rel="stylesheet"></link-->
 <link type="text/css" href="css/components.css" rel="stylesheet"></link>
@@ -34,6 +32,9 @@
 	media="all"></link>
 <link type="text/css" href="fonts/md-icons/md-icons.css"
 	rel="stylesheet" media="all"></link>
+<link type="text/css" href="fonts/home-icons/home-icons.css"
+	rel="stylesheet" media="all"></link>
+
 
 <!-- link rel="import" href="components/paper-elements/paper-elements.html"-->
 
@@ -67,7 +68,8 @@
 					class="icon md-icon-add-circle-outline"></span> Setup Wizard</a>
 				<ul ng-show="isActive('setup')">
 					<li ng-class="{active: isSubActive('search')}"><a
-						href="#setup/search">Search</a></li>
+						href="#setup/search">Search <span
+							ng-show="getNumberOfNewDiscoveryResults() > 0" class="badge">{{getNumberOfNewDiscoveryResults()}}</span></a></li>
 					<li ng-class="{active: isSubActive('manual-setup')}"><a
 						href="#setup/manual-setup/choose">Manual Setup</a></li>
 				</ul></li>
@@ -93,16 +95,19 @@
 		</div>
 	</nav>
 
-	<div id="wrapper">
-		<header>
+	<div id="wrapper" ng-class="{tallheader: isBigTitle()}">
+		<header ng-class="{big: isBigTitle()}">
 			<a href="#" class="open-menu">&#x2261;</a>
-			<h1 class="title">
-				{{title}} <span ng-repeat="subtitle in subtitles" class="subtitle"><span
-					class="chevron md-icon-chevron-right"></span> {{subtitle}}</span>
-			</h1>
+			<div class="title" ng-class="{container: isBigTitle()}">
+				<h1>
+					{{title}} <span ng-repeat="subtitle in subtitles" class="subtitle"><span
+						class="chevron md-icon-chevron-right"></span> {{subtitle}}</span>
+				</h1>
+				<p ng-show="isBigTitle() && headerText" class="title-text">{{headerText}}</p>
+			</div>
 		</header>
 
-		<ng-view></ng-view>
+		<ng-view autoscroll="true"></ng-view>
 
 		<footer> </footer>
 	</div>
@@ -131,6 +136,7 @@
 	<script src="js/services.rest.js"></script>
 	<script src="js/services.repositories.js"></script>
 	<script src="js/controllers.js"></script>
+	<script src="js/controllers.control.js"></script>
 	<script src="js/controllers.setup.js"></script>
 	<script src="js/controllers.configuration.js"></script>
 	<script src="js/main.js"></script>

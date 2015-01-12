@@ -5,7 +5,8 @@ angular.module('SmartHomeManagerApp.controllers.setup',
     }
 }).controller('InboxController', function($scope, $timeout, $mdDialog, inboxService, discoveryResultRepository, toastService) {
 	$scope.setSubtitle(['Search']);
-    $scope.approve = function(thingUID, event) {
+    $scope.setHeaderText('Shows a list of found things in your home.')
+	$scope.approve = function(thingUID, event) {
     	$mdDialog.show({
 			controller : 'ApproveInboxEntryDialogController',
 			templateUrl : 'partials/dialog.approveinboxentry.html',
@@ -108,6 +109,7 @@ angular.module('SmartHomeManagerApp.controllers.setup',
 	}
 }).controller('ManualSetupChooseController', function($scope, bindingRepository, thingTypeRepository, thingSetupService) {
 	$scope.setSubtitle(['Manual Setup']);
+	$scope.setHeaderText('Choose a thing, which should be aded manually to your Smart Home.')
 	
 	$scope.currentBindingId = undefined;
 	$scope.setCurrentBindingId = function(bindingId) {
@@ -180,6 +182,7 @@ angular.module('SmartHomeManagerApp.controllers.setup',
     	return thingType.UID === thingTypeUID;
     },function(thingType) {
     	$scope.setTitle('Configure ' + thingType.label);
+    	$scope.setHeaderText(thingType.description);
 		$scope.thingType = thingType;
 		$scope.thing.UID = thingType.UID + ':' + generateUUID();
 		$.each($scope.thingType.configParameters, function(i, parameter) {

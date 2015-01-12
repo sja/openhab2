@@ -1,5 +1,6 @@
-<section id="main">
-	<div class="bindings tab-panel" ng-if="currentTab === 'bindings'">
+<section id="main" ng-controller="ConfigurationPageController">
+	<div class="bindings tab-panel content" ng-if="page === 'bindings'"
+		ng-controller="BindingController">
 		<div class="header-toolbar">
 			<md-button class="md-icon-refresh" ng-click="refresh()"></md-button>
 		</div>
@@ -12,7 +13,7 @@
 			</div>
 		</div>
 		<div class="container">
-			<div ng-controller="BindingController" class="bindings row">
+			<div class="bindings row">
 				<div class="col-md-4 col-sm-6 col-xs-12 item-wrapper"
 					ng-repeat="binding in data.bindings">
 					<div class="card binding text-left"
@@ -31,7 +32,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="groups white-bg" ng-if="currentTab === 'groups' && !action"
+	<div class="groups white-bg" ng-if="page === 'groups'"
 		ng-controller="GroupController">
 		<div class="header-toolbar">
 			<md-button class="md-icon-refresh" ng-click="refresh()"></md-button>
@@ -52,7 +53,8 @@
 							<h3>{{homeGroup.label}}</h3>
 							<div class="actions">
 								<md-button class="md-raised md-icon-edit"></md-button>
-								<md-button class="md-raised md-icon-delete" ng-click="remove(homeGroup, $event)"></md-button>
+								<md-button class="md-raised md-icon-delete"
+									ng-click="remove(homeGroup, $event)"></md-button>
 							</div>
 						</div>
 						<hr class="border-line" ng-show="!$last" />
@@ -61,7 +63,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="things white-bg" ng-if="currentTab === 'things' && !action"
+	<div class="things white-bg" ng-if="page === 'things' && !path[3]"
 		ng-controller="ThingController">
 		<div class="header-toolbar">
 			<md-button class="md-icon-refresh" ng-click="refresh()"></md-button>
@@ -89,8 +91,10 @@
 							<p>{{getThingType(thing.UID).label}}</p>
 							<p>{{thing.UID}}</p>
 							<div class="actions">
-								<md-button class="md-raised md-icon-edit"  ng-click="navigateTo('things/configure/' + thing.UID)"></md-button>
-								<md-button class="md-raised md-icon-delete" ng-click="remove(thing, $event)"></md-button>
+								<md-button class="md-raised md-icon-edit"
+									ng-click="navigateTo('things/edit/' + thing.UID)"></md-button>
+								<md-button class="md-raised md-icon-delete"
+									ng-click="remove(thing, $event)"></md-button>
 							</div>
 						</div>
 						<hr class="border-line" ng-show="!$last" />
@@ -100,7 +104,7 @@
 		</div>
 	</div>
 	<div class="thing-view white-bg"
-		ng-if="currentTab === 'things' && action === 'view'"
+		ng-if="page === 'things' && path[3] === 'view'"
 		ng-controller="ViewThingController">
 		<div class="header-toolbar">
 			<md-button class="md-icon-delete" ng-click="remove(thing, $event)"></md-button>
@@ -110,7 +114,7 @@
 			<div class="container">
 				<div class="toolbar">
 					<md-button class="md-fab md-icon-edit"
-						ng-click="navigateTo('things/configure/' + thing.UID)"></md-button>
+						ng-click="navigateTo('things/edit/' + thing.UID)"></md-button>
 				</div>
 			</div>
 		</div>
@@ -120,10 +124,10 @@
 			<h2>Channels</h2>
 			<div class="channels">
 				<div class="channel fab-item" ng-repeat="channel in thing.channels">
-					<md-button ng-if="!channel.boundItem"
+					<md-button ng-if="channel.linkedItems.length == 0"
 						class="md-fab md-icon-radio-button-off"
 						ng-click="enableChannel(thing.UID, channel.id)"></md-button>
-					<md-button ng-if="channel.boundItem"
+					<md-button ng-if="channel.linkedItems.length > 0"
 						class="md-fab md-icon-radio-button-on"
 						ng-click="disableChannel(thing.UID, channel.id)"></md-button>
 					<div class="item-content">
@@ -138,9 +142,9 @@
 			</div>
 		</div>
 	</div>
-	<div class="thing-configure white-bg"
-		ng-if="currentTab === 'things' && action === 'configure'"
-		ng-controller="EditThingConfigurationController">
+	<div class="thing-edit white-bg"
+		ng-if="page === 'things' && path[3] === 'edit'"
+		ng-controller="EditThingController">
 		<div class="header-toolbar">
 			<md-button class="md-icon-close"
 				ng-click="navigateTo('things/view/' + thing.UID)"></md-button>
