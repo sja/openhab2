@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2014, openHAB.org and others.
+ * Copyright (c) 2014-2015 openHAB UG (haftungsbeschraenkt) and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -48,14 +48,13 @@ public class DefaultSitemapProvider implements SitemapProvider {
 			sitemap.getChildren().add(frame);
 
 			for(Item item : itemRegistry.getAll()) {
-				if(item instanceof GroupItem && !item.getName().equals("Things") 
-						&& (item.getGroupNames().isEmpty() || item.getGroupNames().contains("Things"))) {
+				if(item instanceof GroupItem && !item.getTags().contains("home-group")) {
 					GroupImpl group = (GroupImpl) SitemapFactory.eINSTANCE.createGroup();
 					group.setItem(item.getName());
+					group.setLabel(item.getLabel());
 					frame.getChildren().add(group);
 				}
 			}
-						
 			return sitemap;
 		}
 		return null;

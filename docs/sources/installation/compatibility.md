@@ -27,7 +27,7 @@ This page is a community effort - please help filling the gaps and analysing pot
 | Epson Projector |  |  |  |  |  |
 | Exec |  |  |  |  |  |
 | Freebox |  |  |  |  |  |
-| Freeswitch |  |  |  |  |  |
+| Freeswitch | - | - | X | X |  |
 | Fritz!Box |  |  |  |  |  |
 | Fritz AHA |  |  |  |  |  |
 | FS20 |  |  |  |  |  |
@@ -47,7 +47,7 @@ This page is a community effort - please help filling the gaps and analysing pot
 | KNX | X | X | X | X | |
 | Koubachi |  |  |  |  |  |
 | Leviton/HAI Omnilink |  |  |  |  |  |
-| MAX!Cube |  |  |  |  |  |
+| MAX!Cube |  |  |  |  | 2.0 version available |
 | MAX! CUL |  |  |  |  |  |
 | MiLight |  |  |  |  |  |
 | Modbus TCP |  |  |  |  |  |
@@ -63,7 +63,7 @@ This page is a community effort - please help filling the gaps and analysing pot
 | Novelan/Luxtronic Heatpump |  |  |  |  |  |
 | NTP | X | X | X | X |  |
 | One-Wire |  |  |  |  |  |
-| Onkyo AV Receiver |  |  |  |  |  |
+| Onkyo AV Receiver | X | X | X | X |  |
 | Open Energy Monitor |  |  |  |  |  |
 | OpenPaths presence detection |  |  |  |  |  |
 | OpenSprinkler |  |  |  |  |  |

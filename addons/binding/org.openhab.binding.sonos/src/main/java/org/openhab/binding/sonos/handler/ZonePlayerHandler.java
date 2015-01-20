@@ -1,5 +1,6 @@
 /**
- * Copyright (c) 2014 openHAB UG (haftungsbeschraenkt) and others.
+ * Copyright (c) 2014-2015 openHAB UG (haftungsbeschraenkt) and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,6 +9,8 @@
 package org.openhab.binding.sonos.handler;
 
 import static org.openhab.binding.sonos.SonosBindingConstants.*;
+
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,6 +25,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.config.discovery.DiscoveryListener;
@@ -58,7 +62,9 @@ import org.openhab.binding.sonos.internal.SonosZoneGroup;
 import org.openhab.binding.sonos.internal.SonosZonePlayerState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Lists;
+
 import static org.openhab.binding.sonos.config.ZonePlayerConfiguration.UDN;
 
 /**
@@ -147,9 +153,9 @@ UpnpIOParticipant, DiscoveryListener {
 	@Override
 	public void initialize() {
 
-		ZonePlayerConfiguration configuration = getConfigAs(ZonePlayerConfiguration.class);
+		Configuration configuration = getConfig();
 
-		if (configuration.udn != null) {
+		if (configuration.get("udn") != null) {
 			onSubscription();
 			onUpdate();
 			super.initialize();
@@ -468,7 +474,7 @@ UpnpIOParticipant, DiscoveryListener {
 				int refreshInterval = DEFAULT_REFRESH_INTERVAL;
 				Object refreshConfig = config.get("refresh");
 				if (refreshConfig != null) {
-					refreshInterval = Integer.parseInt((String) refreshConfig);
+					refreshInterval = ((BigDecimal) refreshConfig).intValue();
 				}
 				pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, 0,
 						refreshInterval, TimeUnit.SECONDS);
@@ -1231,7 +1237,7 @@ UpnpIOParticipant, DiscoveryListener {
 
 			String remotePlayerName = command.toString();
 
-			Thing coordinatorThing = thingRegistry.getByUID(new ThingUID(
+			Thing coordinatorThing = thingRegistry.get(new ThingUID(
 					ZONEPLAYER_THING_TYPE_UID, getCoordinator()));
 			ZonePlayerHandler coordinatorHandler = (ZonePlayerHandler) coordinatorThing
 					.getHandler();
@@ -1255,7 +1261,7 @@ UpnpIOParticipant, DiscoveryListener {
 	protected ZonePlayerHandler getHandlerByName(String remotePlayerName) {
 
 		if(thingRegistry!=null) {
-			Thing thing = thingRegistry.getByUID(new ThingUID(
+			Thing thing = thingRegistry.get(new ThingUID(
 					ZONEPLAYER_THING_TYPE_UID, remotePlayerName));
 	
 			if (thing == null) {

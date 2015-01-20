@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2014, openHAB.org and others.
+ * Copyright (c) 2014-2015 openHAB UG (haftungsbeschraenkt) and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -64,13 +64,15 @@ public class OSGILogListener {
 	 * notified of a log entry, it forwards this entry to slf4j.
 	 * 
 	 * @author Kai Kreuzer
+	 * @author Jochen Hiller - Fix #068 NPE when getBundle() is null
 	 * @since 0.1.0
 	 *
 	 */
 	private static class NLogListener implements LogListener {
 	 	public void logged(LogEntry entry) {
 	 		Logger logger = LoggerFactory.getLogger("OSGi");
-	 		Marker marker = MarkerFactory.getMarker(entry.getBundle().getSymbolicName());
+	 		String markerName = entry.getBundle() == null ? "unknownBundle" : entry.getBundle().getSymbolicName();
+	 		Marker marker = MarkerFactory.getMarker(markerName);
 	 		switch(entry.getLevel()) {
 	 		case LogService.LOG_DEBUG:   logger.debug(marker, entry.getMessage(), entry.getException()); break;
 	 		case LogService.LOG_INFO:    logger.info(marker, entry.getMessage(), entry.getException()); break;
