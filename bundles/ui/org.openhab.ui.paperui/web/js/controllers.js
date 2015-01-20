@@ -67,9 +67,11 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
 			}
     	}
     	
-    	$.each($rootScope.data.items, function(i, item) {
-			changeStateRecursively(item);
-		});
+    	if($rootScope.data.items) {
+	    	$.each($rootScope.data.items, function(i, item) {
+				changeStateRecursively(item);
+			});
+    	}
 	});
     
     $scope.getNumberOfNewDiscoveryResults = function() {

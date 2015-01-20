@@ -123,7 +123,8 @@
 			<p>{{thingType.description}}</p>
 			<h2>Channels</h2>
 			<div class="channels">
-				<div class="channel fab-item" ng-repeat="channel in thing.channels">
+				<div class="channel fab-item"
+					ng-repeat="channel in getChannels(false)">
 					<md-button ng-if="channel.linkedItems.length == 0"
 						class="md-fab md-icon-radio-button-off"
 						ng-click="enableChannel(thing.UID, channel.id)"></md-button>
@@ -131,10 +132,29 @@
 						class="md-fab md-icon-radio-button-on"
 						ng-click="disableChannel(thing.UID, channel.id)"></md-button>
 					<div class="item-content">
-						<h3>
-							{{getChannelById(channel.id).label}} <small>{{channel.id}}</small>
-						</h3>
-						<p>{{channel.itemType}}</p>
+						<h3>{{getChannelById(channel.id).label}}</h3>
+						<p>{{thing.UID + ':' + channel.id}}</p>
+						<p>{{getChannelById(channel.id).description}}</p>
+					</div>
+					<hr class="border-line" />
+				</div>
+			</div>
+			<button class="md-button" ng-init="showAdvanced = false"
+				ng-click="showAdvanced = !showAdvanced"
+				ng-show="getChannels(true).length > 0">{{showAdvanced ? 'Show
+				Less' : 'Show More'}}</button>
+			<div class="advanced-channels" ng-if="showAdvanced">
+				<div class="channel fab-item"
+					ng-repeat="channel in getChannels(true)">
+					<md-button ng-if="channel.linkedItems.length == 0"
+						class="md-fab md-icon-radio-button-off"
+						ng-click="enableChannel(thing.UID, channel.id)"></md-button>
+					<md-button ng-if="channel.linkedItems.length > 0"
+						class="md-fab md-icon-radio-button-on"
+						ng-click="disableChannel(thing.UID, channel.id)"></md-button>
+					<div class="item-content">
+						<h3>{{getChannelById(channel.id).label}}</h3>
+						<p>{{thing.UID + ':' + channel.id}}</p>
 						<p>{{getChannelById(channel.id).description}}</p>
 					</div>
 					<hr class="border-line" />

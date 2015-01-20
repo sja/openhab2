@@ -41,6 +41,10 @@ section#main.control {
 .items .item p {
 	margin: 0px;
 	text-align: left;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	line-height: 38px;
 }
 
 .dimmer-widget md-slider {
@@ -85,6 +89,11 @@ section#main.control {
 	line-height: 32px;
 	padding: 10px;
 }
+
+.items .item md-input-group input {
+	text-align: right;
+}
+
 
 
 /* Inbox */

@@ -1,5 +1,6 @@
 var DataCache = function($q, $rootScope, remoteService, dataType) {
 	var self = this;
+	var cacheEnabled = false;
 	var dirty = false;
 	this.setDirty = function() {
 		this.dirty = true;
@@ -7,7 +8,7 @@ var DataCache = function($q, $rootScope, remoteService, dataType) {
 	this.getAll = function(callback, refresh) {
 		var deferred = $q.defer();
 		remoteService.getAll(function(data) {
-			if((data.length != $rootScope.data[dataType].length) || self.dirty || refresh) {
+			if((!cacheEnabled || (data.length != $rootScope.data[dataType].length) || self.dirty || refresh)) {
 				$rootScope.data[dataType] = data;
 				deferred.resolve(data);
 			} else {
@@ -29,7 +30,9 @@ var DataCache = function($q, $rootScope, remoteService, dataType) {
         		return;
         	}
         });
-        deferred.notify($rootScope.data[dataType]);
+        if(cacheEnabled) {
+        	deferred.notify($rootScope.data[dataType]);
+        }
         return deferred.promise;
 	};
 	this.getOne = function(condition, callback, refresh) {

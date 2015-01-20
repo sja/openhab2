@@ -162,6 +162,16 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
             return channelId == channel.id;
         })[0];
     };
+    
+    $scope.getChannels = function(advanced) {
+        if (!$scope.thingType || !$scope.thing) {
+            return;
+        }
+        return $.grep($scope.thing.channels, function(channel, i) {
+           var channelType = $scope.getChannelById(channel.id);
+           return channelType ? advanced == channelType.advanced : false;
+        });
+    };
 	
     $scope.getThing = function(refresh) {
     	thingRepository.getOne(function(thing) {

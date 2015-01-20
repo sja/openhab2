@@ -23,21 +23,22 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
         for (var int = 0; int < items.length; int++) {
             var item = items[int];
             if (item.type === 'GroupItem') {
-                if(item.tags.indexOf("home_group") > -1) {
+                if(item.tags.indexOf("home-group") > -1) {
                     $scope.tabs.push({name:item.name, label: item.label});
                 }
             }
         }
+        
         $scope.masonry = function() {
-        	$scope.$watch('items', function(value) {
-                var val = value || null;
-                if (val) {
-                    $timeout(function() {
-                        new Masonry('.items', {});
-                    }, 0, false);
-                }
-            });	
+            if ($scope.data.items) {
+                $timeout(function() {
+                    new Masonry('.items', {});
+                }, 100, false);
+            }
 		}
+	    $scope.$watch('data.items', function(value) {
+	    	$scope.masonry();
+	    });
         $scope.$watch('selectedTabIndex', function() {
         	$scope.masonry();
 		});
@@ -95,7 +96,9 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 		'Alarm' : {},
 		'Battery' : {},
 		'Blinds' : {},
-		'ColorLight' : {},
+		'ColorLight' : {
+			label: 'Light'
+		},
 		'Contact' : {},
 		'DimmableLight' : {
 			label: 'Dimmer'
@@ -122,7 +125,10 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 		'Rain' : {},
 		'Recorder' : {},
 		'Smoke' : {},
-		'SoundVolume' : {},
+		'SoundVolume' : {
+			volume: 'Volume',
+			icon: 'volume-up'
+		},
 		'Switch' : {},
 		'Temperature' : {},
 		'Water' : {},
@@ -131,24 +137,48 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 		'Zoom' : {},
     }
     
-    $scope.getCategoryText = function (itemCategory) {
-    	var category = categories[itemCategory];
-    	return category.label ? category.label : itemCategory;
+    $scope.getLabel = function (itemCategory, label, defaultLabel) {
+    	if(label) {
+    		return label;
+    	}
+    	
+    	if(itemCategory) {
+    		var category = categories[itemCategory];
+    		if(category) {
+    			return category.label ? category.label : itemCategory;
+    		} else {
+    			return defaultLabel;
+    		}
+    	} else {
+			return defaultLabel;
+		}
     }
-    $scope.getCategoryIcon = function (itemCategory) {
-    	var category = categories[itemCategory];
-    	return category.icon ? category.icon : 'md-icon-trending-up';
+    $scope.getIcon = function (itemCategory) {
+    	var defaultIcon = 'md-icon-radio-button-off'
+    	if(itemCategory) {
+    		var category = categories[itemCategory];
+    		if(category) {
+    			return category.icon ? category.icon : 'md-icon-trending-up';
+    		} else {
+    			return defaultIcon;
+			}
+    	} else {
+			return defaultIcon;
+		}
     }
-}).controller('DefaultItemController', function($scope, itemService) {
-
+    $scope.isReadOnly = function (item) {
+    	return item.stateDescription ? item.stateDescription.readOnly : false;
+    }
+    
     $scope.sendCommand = function(state) {
         itemService.sendCommand({
             itemName : $scope.item.name
         }, state);
     }
+}).controller('DefaultItemController', function($scope, itemService) {
 
 }).controller('SwitchItemController', function($scope, $timeout, itemService) {
-    $scope.toggle = function(state) {
+    $scope.setOn = function(state) {
         itemService.sendCommand({
             itemName : $scope.item.name
         }, state);
@@ -277,4 +307,20 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
     
     var hexColor =  $scope.getHexColor();
     $($element).find('.hue .md-thumb').css('background-color', hexColor);
+}).controller('NumberItemController', function($scope) {
+	$scope.shouldRenderSlider = function(item) {
+		if(item.stateDescription) {
+			var stateDescription = item.stateDescription;
+			if(stateDescription.readOnly) {
+				return false;
+			} else {
+				if(stateDescription.minimum && stateDescription.maximum) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		}
+		return false;
+	}
 });
