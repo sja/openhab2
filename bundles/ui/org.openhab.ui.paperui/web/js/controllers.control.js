@@ -97,11 +97,11 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 		'Battery' : {},
 		'Blinds' : {},
 		'ColorLight' : {
-			label: 'Light'
+			label: 'Color'
 		},
 		'Contact' : {},
 		'DimmableLight' : {
-			label: 'Dimmer'
+			label: 'Brightness'
 		},
 		'CarbonDioxide' : {
 			label: 'CO2'
@@ -126,8 +126,9 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 		'Recorder' : {},
 		'Smoke' : {},
 		'SoundVolume' : {
-			volume: 'Volume',
-			icon: 'volume-up'
+			label: 'Volume',
+			icon: 'md-icon-volume-up',
+			hideSwitch: true
 		},
 		'Switch' : {},
 		'Temperature' : {},
@@ -153,12 +154,12 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 			return defaultLabel;
 		}
     }
-    $scope.getIcon = function (itemCategory) {
-    	var defaultIcon = 'md-icon-radio-button-off'
+    $scope.getIcon = function (itemCategory, fallbackIcon) {
+    	var defaultIcon = fallbackIcon ? fallbackIcon : 'md-icon-radio-button-off';
     	if(itemCategory) {
     		var category = categories[itemCategory];
     		if(category) {
-    			return category.icon ? category.icon : 'md-icon-trending-up';
+    			return category.icon ? category.icon : defaultIcon;
     		} else {
     			return defaultIcon;
 			}
@@ -166,6 +167,15 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 			return defaultIcon;
 		}
     }
+    $scope.isHideSwitch = function(itemCategory) {
+    	if(itemCategory) {
+    		var category = categories[itemCategory];
+    		if(category) {
+    			return category.hideSwitch;
+    		}
+    	}
+    	return false;
+	}
     $scope.isReadOnly = function (item) {
     	return item.stateDescription ? item.stateDescription.readOnly : false;
     }
