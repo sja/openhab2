@@ -20,3 +20,4 @@ distribution/openhabhome/userdata/mapdb/storage.mapdb.t
 bundles/ui/org.openhab.ui.paperui/web/js/lib
 *.iml
 .idea
+distribution/openhabhome/userdata/logs
