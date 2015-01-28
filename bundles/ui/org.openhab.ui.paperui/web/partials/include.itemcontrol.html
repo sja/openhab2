@@ -7,9 +7,11 @@
 			</div>
 			<div flex="60" layout="row" layout-align="end center"
 				class="dimmer-widget">
-				<md-switch ng-if="!isReadOnly(item)" ng-model="item.state" ng-change="setOn(item.state)"
-					ng-true-value="'ON'" ng-false-value="'OFF'"></md-switch>
-				<h1 ng-if="isReadOnly(item)">{{item.state === 'ON' : 'ON' : 'OFF'}}</h1>
+				<md-switch ng-if="!isReadOnly(item)" ng-model="item.state"
+					ng-change="setOn(item.state)" ng-true-value="'ON'"
+					ng-false-value="'OFF'"></md-switch>
+				<h1 ng-if="isReadOnly(item)">{{item.state === 'ON' ? 'ON' :
+					'OFF'}}</h1>
 			</div>
 		</div>
 	</div>
@@ -26,10 +28,10 @@
 		</div>
 		<md-slider style="height: 40px;" flex min="0" max="100"
 			ng-model="item.state" ng-change="setBrightness(item.state)"></md-slider>
-		<hr ng-if="!isHideSwitch(item.category)" />
-		<div layout="row" layout-align="start center" class="dimmer-widget" ng-if="!isHideSwitch(item.category)">
+		<div layout="row" layout-align="start center" class="dimmer-widget"
+			ng-if="!isHideSwitch(item.category)">
 			<div flex="40">
-				<p class="icon-switch">{{getLabel(null, item.label, 'Switch')}}</p>
+				<p>{{getLabel(null, item.label, 'On/Off')}}</p>
 			</div>
 			<div flex="60" layout="row" layout-align="end center"
 				class="dimmer-widget">
@@ -44,28 +46,26 @@
 				<p class="icon-droplet">{{getLabel(item.category, null,
 					'Color')}}</p>
 			</div>
-			<div flex="60" layout="column" layout-align="end center"
+			<div flex="60" layout="row" layout-align="end center"
 				class="dimmer-widget">
+
 				<md-slider class="hue" flex min="0" max="360" ng-model="hue"
 					ng-change="setHue(hue)"></md-slider>
 			</div>
 		</div>
-		<hr />
 		<div layout="row" layout-align="start center" class="dimmer-widget">
 			<div flex="40">
-				<p class="icon-brightness-contrast">{{getLabel(null, null,
-					'Brightness')}}</p>
+				<p class="">Brightness</p>
 			</div>
-			<div flex="60" layout="column" layout-align="end center"
+			<div flex="60" layout="row" layout-align="end center"
 				class="dimmer-widget">
 				<md-slider flex min="0" max="100" ng-model="brightness"
 					ng-change="setBrightness(brightness)"></md-slider>
 			</div>
 		</div>
-		<hr />
 		<div layout="row" layout-align="start center" class="dimmer-widget">
 			<div flex="40">
-				<p class="icon-switch">{{getLabel(null, null, 'Switch')}}</p>
+				<p class="">On/Off</p>
 			</div>
 			<div flex="60" layout="row" layout-align="end center"
 				class="dimmer-widget">
@@ -95,6 +95,29 @@
 				step="{{item.stateDescription.step}}" ng-model="item.state"
 				md-discrete="true" ng-if="getMinText(item) && getMaxText(item)"></md-slider>
 			<span flex="15" class="text-right" ng-if="getMaxText(item)">{{getMaxText(item)}}</span>
+		</div>
+	</div>
+	<div ng-switch-when="RollershutterItem"
+		ng-controller="RollershutterItemController">
+		<div layout="row" layout-align="start center">
+			<div flex="40" layout="row" layout-align="start center">
+				<p ng-class="getIcon(item.category, 'md-icon-trending-up')">{{getLabel(item.category,
+					item.label, 'Position')}}</p>
+			</div>
+			<div flex="60" layout="row" layout-align="end center">
+				<h1>{{item.state}} %</h1>
+			</div>
+		</div>
+		<div layout="row" layout-align="end center"
+			class="number-control-widget">
+			<div flex="40" layout="row" layout-align="start center">
+				<p>Control</p>
+			</div>
+			<div flex="60" layout="row" layout-align="end center">
+				<button class="md-button md-icon-arrow-drop-down"></button>
+				<button class="md-button md-icon-stop"></button>
+				<button class="md-button md-icon-arrow-drop-up"></button>
+			</div>
 		</div>
 	</div>
 	<div ng-switch-default ng-controller="DefaultItemController">

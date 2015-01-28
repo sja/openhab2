@@ -20,7 +20,7 @@
 <link type="text/css"
 	href="js/lib/angular-material/angular-material.min.css"
 	rel="stylesheet"></link>
-	
+
 <!-- custom css files -->
 <!--link type="text/css" href="css/main.css" rel="stylesheet"></link-->
 <link type="text/css" href="css/components.css" rel="stylesheet"></link>
@@ -63,11 +63,11 @@
 					class="icon icon-equalizer"></span> Control</a></li>
 			<li ng-class="{active: isActive('setup')}"><a
 				ng-click="open('setup')" class="clickable"><span
-					class="icon md-icon-add-circle-outline"></span> Setup Wizard</a>
+					class="icon md-icon-add-circle-outline"></span> Setup Wizard <span
+					ng-show="getNumberOfNewDiscoveryResults() > 0" class="badge">{{getNumberOfNewDiscoveryResults()}}</span></a>
 				<ul ng-show="isActive('setup')">
 					<li ng-class="{active: isSubActive('search')}"><a
-						href="#setup/search">Search <span
-							ng-show="getNumberOfNewDiscoveryResults() > 0" class="badge">{{getNumberOfNewDiscoveryResults()}}</span></a></li>
+						href="#setup/search">Search</a></li>
 					<li ng-class="{active: isSubActive('manual-setup')}"><a
 						href="#setup/manual-setup/choose">Manual Setup</a></li>
 				</ul></li>

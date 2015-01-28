@@ -229,86 +229,103 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 	});
 }).controller('ColorItemController', function($scope, $timeout, $element, itemService) {
 
+	function getStateAsObject(state) {
+		var stateParts = state.split(",");
+		if(stateParts.length == 3) {
+			return {
+				h: parseInt(stateParts[0]),
+				s: parseInt(stateParts[1]),
+				b: parseInt(stateParts[2])
+			}
+		} else {
+			return {
+				h: 0,
+				s: 0,
+				b: 0
+			}
+		}
+	}
+	
+	function toState(stateObject) {
+		return Math.ceil(stateObject.h) + ',' + Math.ceil(stateObject.s) + ',' + Math.ceil(stateObject.b);
+	}
+	
 	$scope.setOn = function(on) {
+		
         itemService.sendCommand({
             itemName : $scope.item.name
         }, on);
         
         if(on === 'ON' && $scope.brightness === 0) {
-        	$scope.brightness = 100;
+        	// set state to ON
+        	var stateObject = getStateAsObject($scope.item.state);
+        	stateObject.b = 100;
+        	$scope.item.state = toState(stateObject);
         }
         if(on === 'OFF' && $scope.brightness > 0) {
-        	$scope.brightness = 0;
+        	// set state to OFF
+        	var stateObject = getStateAsObject($scope.item.state);
+        	stateObject.b = 0;
+        	$scope.item.state = toState(stateObject);
         }
     }
 	
     $scope.setBrightness = function(brightness) {
         var brightnessValue = brightness === 0 ? '0' : brightness;
+        
         itemService.sendCommand({
             itemName : $scope.item.name
         }, brightnessValue);
+        
+        var stateObject = getStateAsObject($scope.item.state);
+    	stateObject.b = brightnessValue;
+    	$scope.item.state = toState(stateObject);
     }
     
     $scope.setHue = function(hue) {
         var hueValue = hue === 0 ? '0' : hue;
-        var color = $scope.toTinyColor($scope.item.state).toHsv();
-        color.h = hueValue;
         
-        if(!color.s) {
-            color.s = 1;
+        var stateObject = getStateAsObject($scope.item.state);
+    	stateObject.h = hueValue;
+    	
+        if(!stateObject.s) {
+        	stateObject.s = 100;
         }
-        if(!color.v) {
-            color.v = 1;
+        // if light is OFF, change it to ON
+        if(!stateObject.b) {
+        	stateObject.b = 100;
         }
-        
-        $scope.item.state = $scope.toColorState(color);
-        
+         
         itemService.sendCommand({
             itemName : $scope.item.name
         }, $scope.item.state);
         
-        var hexColor =  $scope.getHexColor();
-        $($element).find('.hue .md-thumb').css('background-color', hexColor);
-        
-        if($scope.on === 'OFF') {
-        	$scope.on = 'ON';
-        	$scope.brightness = 100;
-        }
-    }
-
-    $scope.toTinyColor = function(state) {
-        var colorParts = state.split(",");
-        return tinycolor({
-            h : colorParts[0],
-            s : colorParts[1] / 100,
-            v : colorParts[2] / 100
-        });
+        $scope.item.state = toState(stateObject);
     }
 
     $scope.getHexColor = function() {
-        var hsv = $scope.toTinyColor($scope.item.state).toHsv();
-        
-        hsv.s = 1;
-        hsv.v = 1;
-        
+    	var stateObject = getStateAsObject($scope.item.state);
+        var hsv = tinycolor({
+            h : stateObject.h,
+            s : 1,
+            v : 1
+        }).toHsv();
         return tinycolor(hsv).toHexString();
-    }
-
-    $scope.toColorState = function(hsv) {
-        return Math.ceil(hsv.h) + ',' + Math.ceil(hsv.s * 100) + ',' + Math.ceil(hsv.v * 100);
     }
     
     var setStates = function() {
-    	var hue = $scope.toTinyColor($scope.item.state).toHsv().h;
-        var brightness = $scope.toTinyColor($scope.item.state).toHsv().v * 100;
+    	var stateObject = getStateAsObject($scope.item.state);
+    	var hue = stateObject.h;
+        var brightness = stateObject.b;
         
         $scope.hue = hue ? hue : 0;
         $scope.brightness = brightness ? brightness : 0;
-        $scope.on = brightness > 0 ? 'ON' : 'OFF';
+        $scope.on = $scope.brightness > 0 ? 'ON' : 'OFF';
         
         var hexColor = $scope.getHexColor();
         $($element).find('.hue .md-thumb').css('background-color', hexColor);
 	}
+    
     setStates();
      
     $scope.$watch('item.state', function() {
@@ -333,4 +350,6 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 		}
 		return false;
 	}
+}).controller('RollershutterItemController', function($scope) {
+    	
 });

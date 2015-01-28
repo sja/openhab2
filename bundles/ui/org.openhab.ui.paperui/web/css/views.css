@@ -40,10 +40,11 @@ section#main.control {
 
 .items .item p {
 	margin: 0px;
-	text-align: left;
-	text-overflow: ellipsis;
+	text-align: left;	
 	white-space: nowrap;
+	/*
 	overflow: hidden;
+	text-overflow: ellipsis;*/
 	line-height: 38px;
 }
 

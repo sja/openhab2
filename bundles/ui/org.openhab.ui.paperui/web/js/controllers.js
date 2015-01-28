@@ -1,4 +1,5 @@
-angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController', function($rootScope, $scope, eventService, toastService) {
+angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController', function($rootScope, $scope, eventService, 
+        toastService, discoveryResultRepository) {
 	$scope.getSchemeClass = function() {
         var theme = localStorage.getItem('theme');
         if (theme) {
@@ -87,6 +88,8 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
 		}
     	return numberOfNewDiscoveryResults;
 	}
+    
+    discoveryResultRepository.getAll();
 }).controller('PreferencesPageController', function($scope) {
 	$scope.setHeaderText('Edit user preferences.');
 	
