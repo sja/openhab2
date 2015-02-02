@@ -43,7 +43,7 @@
 	<div ng-switch-when="ColorItem" ng-controller="ColorItemController">
 		<div layout="row" layout-align="start center" class="dimmer-widget">
 			<div flex="40">
-				<p class="icon-droplet">{{getLabel(item.category, null,
+				<p class="md-icon-wb-incandescent">{{getLabel(item.category, null,
 					'Color')}}</p>
 			</div>
 			<div flex="60" layout="row" layout-align="end center"
@@ -101,22 +101,36 @@
 		ng-controller="RollershutterItemController">
 		<div layout="row" layout-align="start center">
 			<div flex="40" layout="row" layout-align="start center">
-				<p ng-class="getIcon(item.category, 'md-icon-trending-up')">{{getLabel(item.category,
+				<p ng-class="getIcon(item.category, 'md-icon-format-align-justify')">{{getLabel(item.category,
 					item.label, 'Position')}}</p>
 			</div>
 			<div flex="60" layout="row" layout-align="end center">
 				<h1>{{item.state}} %</h1>
 			</div>
 		</div>
-		<div layout="row" layout-align="end center"
-			class="number-control-widget">
+		<div layout="row" layout-align="end center">
 			<div flex="40" layout="row" layout-align="start center">
 				<p>Control</p>
 			</div>
 			<div flex="60" layout="row" layout-align="end center">
-				<button class="md-button md-icon-arrow-drop-down"></button>
+				<button class="md-button md-icon-vertical-align-bottom"></button>
 				<button class="md-button md-icon-stop"></button>
-				<button class="md-button md-icon-arrow-drop-up"></button>
+				<button class="md-button md-icon-vertical-align-top"></button>
+			</div>
+		</div>
+	</div>
+	<div ng-switch-when="PlayerItem"
+		ng-controller="PlayerItemController">
+		<div layout="row" layout-align="end center">
+			<div flex="40" layout="row" layout-align="start center">
+				<p ng-class="getIcon(item.category, 'md-icon-play-arrow')">{{getLabel(null,
+					item.label, 'Control')}}</p>
+			</div>
+			<div flex="60" layout="row" layout-align="end center">
+				<button class="md-button md-icon-skip-previous"></button>
+				<button ng-show="item.state !== 'PLAY'" class="md-button md-icon-play-arrow"></button>
+				<button ng-show="item.state === 'PLAY'" class="md-button md-icon-pause"></button>
+				<button class="md-button md-icon-skip-next"></button>
 			</div>
 		</div>
 	</div>

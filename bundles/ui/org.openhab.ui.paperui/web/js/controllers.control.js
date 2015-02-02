@@ -97,11 +97,13 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 		'Battery' : {},
 		'Blinds' : {},
 		'ColorLight' : {
-			label: 'Color'
+			label: 'Color',
+			icon: 'md-icon-wb-incandescent'
 		},
 		'Contact' : {},
 		'DimmableLight' : {
-			label: 'Brightness'
+			label: 'Brightness',
+			icon: 'md-icon-wb-incandescent'
 		},
 		'CarbonDioxide' : {
 			label: 'CO2'
@@ -351,5 +353,7 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 		return false;
 	}
 }).controller('RollershutterItemController', function($scope) {
-    	
+	
+}).controller('PlayerItemController', function($scope) {
+	    	
 });
