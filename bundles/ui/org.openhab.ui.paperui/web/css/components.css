@@ -39,6 +39,10 @@
 	background-color: inherit;
 }
 
+.md-button.md-default-theme.md-primary {
+	color: #01324D;
+}
+
 /* Fab */
 
 .md-button.md-fab:not([disabled]) {
@@ -309,6 +313,14 @@ md-input-group.md-default-theme input, md-input-group.md-default-theme textarea 
 	color: inherit;
 	font-size: 18px;
 	line-height: 40px;
+}
+
+md-input-container.md-default-theme:not(.md-input-invalid).md-input-focused .md-input {
+	border-color: #01324D;
+}
+
+md-input-group.md-default-theme.md-input-focused input, md-input-group.md-default-theme.md-input-focused textarea {
+	border-color: #01324D;
 }
 
 .form-group p.hint {

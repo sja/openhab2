@@ -1,4 +1,4 @@
-<div ng-switch on="item.type" class="icontrol">
+<div ng-switch on="item.type" class="icontrol" ng-controller="ItemController">
 	<div ng-switch-when="SwitchItem" ng-controller="SwitchItemController">
 		<div layout="row" layout-align="start center" class="dimmer-widget">
 			<div flex="40">
@@ -82,9 +82,9 @@
 			</div>
 			<div flex="60" layout="row" layout-align="end center">
 				<h1 class="state" ng-if="isReadOnly(item)">{{getStateText(item)}}</h1>
-				<md-text-float
+				<md-input-container> <input
 					ng-if="!isReadOnly(item) && !shouldRenderSlider(item)"
-					ng-model="item.state" ng-blur='sendCommand(item.state)'></md-text-float>
+					ng-model="item.state" ng-blur='sendCommand(item.state)'></input> <md-input-container>
 			</div>
 		</div>
 		<div ng-if="shouldRenderSlider(item)" layout="row"
@@ -113,9 +113,9 @@
 				<p>Control</p>
 			</div>
 			<div flex="60" layout="row" layout-align="end center">
-				<button class="md-button md-icon-vertical-align-bottom"></button>
-				<button class="md-button md-icon-stop"></button>
-				<button class="md-button md-icon-vertical-align-top"></button>
+				<button class="md-button md-icon-vertical-align-bottom" ng-click="sendCommand('DOWN')"></button>
+				<button class="md-button md-icon-stop"  ng-click="sendCommand('STOP')"></button>
+				<button class="md-button md-icon-vertical-align-top" ng-click="sendCommand('UP')"></button>
 			</div>
 		</div>
 	</div>
@@ -127,10 +127,10 @@
 					item.label, 'Control')}}</p>
 			</div>
 			<div flex="60" layout="row" layout-align="end center">
-				<button class="md-button md-icon-skip-previous"></button>
-				<button ng-show="item.state !== 'PLAY'" class="md-button md-icon-play-arrow"></button>
-				<button ng-show="item.state === 'PLAY'" class="md-button md-icon-pause"></button>
-				<button class="md-button md-icon-skip-next"></button>
+				<button class="md-button md-icon-skip-previous" ng-click="sendCommand('PREVIOUS')"></button>
+				<button ng-show="item.state !== 'PLAY'" class="md-button md-icon-play-arrow" ng-click="sendState('PLAY')"></button>
+				<button ng-show="item.state === 'PLAY'" class="md-button md-icon-pause"  ng-click="sendState('PAUSE')"></button>
+				<button class="md-button md-icon-skip-next" ng-click="sendCommand('NEXT')"></button>
 			</div>
 		</div>
 	</div>

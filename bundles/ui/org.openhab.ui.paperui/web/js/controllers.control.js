@@ -187,6 +187,16 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
             itemName : $scope.item.name
         }, state);
     }
+}).controller('ItemController', function($scope, itemService) {
+    $scope.sendCommand = function(command) {
+        itemService.sendCommand({
+            itemName : $scope.item.name
+        }, command);
+    };
+    $scope.sendState = function(state) {
+        $scope.sendCommand(state);
+        $scope.item.state = state;
+    }
 }).controller('DefaultItemController', function($scope, itemService) {
 
 }).controller('SwitchItemController', function($scope, $timeout, itemService) {
@@ -355,5 +365,5 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 }).controller('RollershutterItemController', function($scope) {
 	
 }).controller('PlayerItemController', function($scope) {
-	    	
+
 });

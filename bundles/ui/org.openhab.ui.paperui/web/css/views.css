@@ -91,7 +91,7 @@ section#main.control {
 	padding: 10px;
 }
 
-.items .item md-input-group input {
+.items .item md-input-container input {
 	text-align: right;
 }
 
