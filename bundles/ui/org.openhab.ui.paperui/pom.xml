@@ -14,7 +14,7 @@
     <bundle.namespace>org.openhab.ui.paperui</bundle.namespace>
   </properties>
 
-  <groupId>oorg.openhab.ui</groupId>
+  <groupId>org.openhab.ui</groupId>
   <artifactId>org.openhab.ui.paperui</artifactId>
 
   <name>openHAB Paper UI</name>
