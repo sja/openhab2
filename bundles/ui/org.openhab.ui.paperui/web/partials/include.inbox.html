@@ -1,0 +1,17 @@
+<div class="fab-item"
+	ng-repeat="discoveryResult in data.discoveryResults | filter:filter">
+	<md-button title="Add" class="md-fab md-icon-done green"
+		ng-click="approve(discoveryResult.thingUID, $event)"></md-button>
+	<div class="item-content">
+		<h3>{{thingTypes[getThingTypeUID(discoveryResult.thingUID)].label}}</h3>
+		<p>{{discoveryResult.label}}</p>
+		<p>{{discoveryResult.thingUID}}</p>
+		<div class="actions">
+			<md-button class="md-icon-block"
+				ng-click="ignore(discoveryResult.thingUID)"></md-button>
+			<md-button class="md-icon-delete"
+				ng-click="remove(discoveryResult.thingUID, $event)"></md-button>
+		</div>
+	</div>
+	<hr class="border-line" ng-show="!$last"/>
+</div>

@@ -8,6 +8,10 @@
 	font-size: 24px;	
 }
 
+.md-button[class*="md-icon-"]:before, .md-button[class*="md-icon-"] * {
+	vertical-align: middle;
+}
+
 .md-button span[class*="md-icon-"] {
 	margin-right: 5px;
 }
@@ -41,6 +45,11 @@
 
 .md-button.md-default-theme.md-primary {
 	color: #01324D;
+}
+
+.md-button.highlighted {
+	background-color: #4CAF50;	
+	color: white;
 }
 
 /* Fab */

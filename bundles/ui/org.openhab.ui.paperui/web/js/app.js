@@ -16,6 +16,9 @@ angular.module('SmartHomeManagerApp', [
 	when('/setup/search', {templateUrl: 'partials/setup.html', controller: 'InboxController', title: 'Setup Wizard'}).
 	when('/setup/manual-setup/choose', {templateUrl: 'partials/setup.html', controller: 'ManualSetupChooseController', title: 'Setup Wizard'}).
 	when('/setup/manual-setup/configure/:thingTypeUID', {templateUrl: 'partials/setup.html', controller: 'ManualSetupConfigureController', title: 'Setup Wizard'}).
+	when('/setup/wizard', {templateUrl: 'partials/setup.html', controller: 'SetupWizardController', title: 'Setup Wizard'}).
+	when('/setup/wizard/bindings', {templateUrl: 'partials/setup.html', controller: 'SetupWizardController', title: 'Setup Wizard'}).
+	when('/setup/wizard/search/:bindingId', {templateUrl: 'partials/setup.html', controller: 'SetupWizardController', title: 'Setup Wizard'}).
 	when('/configuration', {redirectTo: '/configuration/bindings'}).
 	when('/configuration/bindings', {templateUrl: 'partials/configuration.html', controller: 'BindingController', title: 'Configuration'}).
 	when('/configuration/groups', {templateUrl: 'partials/configuration.html', controller: 'GroupController', title: 'Configuration'}).

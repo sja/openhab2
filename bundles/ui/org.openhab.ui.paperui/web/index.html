@@ -14,9 +14,15 @@
 	href='http://fonts.googleapis.com/css?family=Roboto:100,200,300,400,500,700,'
 	rel='stylesheet' type='text/css'></link-->
 
-<link type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-<link type="text/css" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
-<link type="text/css"	href="bower_components/angular-material/angular-material.min.css"	rel="stylesheet">
+<link type="text/css"
+	href="bower_components/bootstrap/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<link type="text/css"
+	href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css"
+	rel="stylesheet">
+<link type="text/css"
+	href="bower_components/angular-material/angular-material.min.css"
+	rel="stylesheet">
 
 <!-- custom css files -->
 <!--link type="text/css" href="css/main.css" rel="stylesheet"></link-->
@@ -63,6 +69,8 @@
 					class="icon md-icon-add-circle-outline"></span> Setup Wizard <span
 					ng-show="getNumberOfNewDiscoveryResults() > 0" class="badge">{{getNumberOfNewDiscoveryResults()}}</span></a>
 				<ul ng-show="isActive('setup')">
+					<li ng-class="{active: isSubActive('wizard')}"><a
+						href="#setup/wizard">Add Thing</a></li>
 					<li ng-class="{active: isSubActive('search')}"><a
 						href="#setup/search">Search</a></li>
 					<li ng-class="{active: isSubActive('manual-setup')}"><a
@@ -108,20 +116,23 @@
 	</div>
 
 	<!-- lib js files -->
-	
+
 	<script src="bower_components/angular/angular.min.js"></script>
 	<script src="bower_components/angular-route/angular-route.min.js"></script>
 	<script src="bower_components/angular-resource/angular-resource.min.js"></script>
 	<script src="bower_components/angular-animate/angular-animate.min.js"></script>
 	<script src="bower_components/angular-aria/angular-aria.min.js"></script>
 	<script src="bower_components/angular-material/angular-material.min.js"></script>
-	
-	<script src="bower_components/jquery/dist/jquery.min.js"></script>
-	<script src="bower_components/underscore/underscore-min.js"></script><!-- TODO: Check if really needed -->
 
-	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script><!-- TODO: Create custom variant to save space -->
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="bower_components/underscore/underscore-min.js"></script>
+	<!-- TODO: Check if really needed -->
+
+	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<!-- TODO: Create custom variant to save space -->
 	<script src="bower_components/tinycolor/tinycolor.js"></script>
-	<script src="bower_components/masonry/dist/masonry.pkgd.min.js"></script><!-- TODO: Use angularized version? -->
+	<script src="bower_components/masonry/dist/masonry.pkgd.min.js"></script>
+	<!-- TODO: Use angularized version? -->
 	<script src="bower_components/sprintf/dist/sprintf.min.js"></script>
 
 	<!-- custom js files -->

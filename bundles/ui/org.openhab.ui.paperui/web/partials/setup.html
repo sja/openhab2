@@ -2,7 +2,8 @@
 	<div ng-controller="InboxController" class="white-bg inbox"
 		ng-if="page === 'search' || !page">
 		<div class="header-toolbar">
-			<md-button class="md-icon-add" ng-click="navigateTo('manual-setup/choose')"></md-button>
+			<md-button class="md-icon-add"
+				ng-click="navigateTo('manual-setup/choose')"></md-button>
 			<md-button class="md-icon-refresh" ng-click="getAll()"></md-button>
 		</div>
 		<div class="section-header">
@@ -93,5 +94,78 @@
 		</div>
 
 		<div ng-include="'partials/include.thingconfig.html'"></div>
+	</div>
+	<div ng-controller="InboxController" class="thing-add white-bg"
+		ng-if="page === 'wizard' && !path[3]">
+		<div class="header-toolbar">
+			<md-button title="Scan" class="md-icon-settings-input-antenna"
+				ng-click="showScanDialog($event)"></md-button>
+			<md-button class="md-icon-refresh" ng-click="getAll()"></md-button>
+		</div>
+		<div class="section-header">
+			<div class="container">
+				<div class="toolbar">
+					<md-button class="md-fab md-icon-add"
+						ng-click="navigateTo('wizard/bindings')"></md-button>
+				</div>
+			</div>
+		</div>
+		<div class="container">
+			<div ng-include="'partials/include.inbox.html'"></div>
+			<div class="text-center" ng-if="data.discoveryResults.length == 0">
+				<h3>Inbox is empty.</h3>
+			</div>
+			<br />
+			<p class="text-center">
+				<span>Thing not listed?</span>
+				<md-button title="Add Manually" class="md-button" ng-click="">Search For Things</md-button>
+			</p>
+		</div>
+	</div>
+	<div ng-controller="SetupWizardBindingsController" class="white-bg"
+		ng-if="page === 'wizard' && path[3] === 'bindings'">
+		<div class="section-header"></div>
+		<div class="container">
+			<div ng-repeat="binding in data.bindings"
+				ng-click="selectBinding(binding.id)">
+				<div class="binding" data-binding-id="{{binding.id}}">
+					<h3>{{binding.name}}</h3>
+					<p>{{binding.description}}</p>
+				</div>
+				<hr ng-show="!$last" />
+			</div>
+		</div>
+	</div>
+	<div ng-controller="SetupWizardSearchBindingController"
+		class="white-bg"
+		ng-if="page === 'wizard' && path[3] === 'search' && path[4]">
+		<div class="section-header">
+			<div class="container">
+				<div class="toolbar">
+					<md-button class="md-fab md-icon-refresh"
+						ng-click="scan(bindingId)"></md-button>
+				</div>
+			</div>
+		</div>
+		<div class="container">
+			<div layout="row" layout-align="start center" ng-show="scanning">
+				<div>
+					<md-progress-circular md-mode="indeterminate"></md-progress-circular>
+				</div>
+				<div>
+					<span>Searching for Things...</span>
+				</div>
+			</div>
+			<div layout="row" layout-align="start center" ng-show="!scanning">
+				<div>
+					
+				</div>
+				<div>
+					<span>Thing not found? <button class="md-button">Manually Add Thing</button></span>
+				</div>
+			</div>
+			<hr />
+			<div ng-include="'partials/include.inbox.html'"></div>
+		</div>
 	</div>
 </section>

@@ -1,9 +1,23 @@
+function getThingTypeUID(thingUID) {
+    var segments = thingUID.split(':');
+    return segments[0] + ':' + segments[1];
+};
+
 angular.module('SmartHomeManagerApp.controllers.setup', 
-[]).controller('SetupPageController', function($scope, $location) {
+[]).controller('SetupPageController', function($scope, $location, thingTypeRepository) {
     $scope.navigateTo = function(path) {
         $location.path('setup/' + path);
     }
-}).controller('InboxController', function($scope, $timeout, $mdDialog, inboxService, discoveryResultRepository, toastService) {
+    $scope.getThingTypeUID = function(thingUID) {
+        return getThingTypeUID(thingUID);
+    }
+    $scope.thingTypes = [];
+    thingTypeRepository.getAll(function(thingTypes) {
+        $.each(thingTypes, function(i, thingType) {
+            $scope.thingTypes[thingType.UID] = thingType;
+        })
+    });
+}).controller('InboxController', function($scope, $timeout, $mdDialog, inboxService, discoveryResultRepository, thingTypeRepository, toastService) {
 	$scope.setSubtitle(['Search']);
     $scope.setHeaderText('Shows a list of found things in your home.')
 	$scope.approve = function(thingUID, event) {
@@ -75,7 +89,9 @@ angular.module('SmartHomeManagerApp.controllers.setup',
 
         });
     	setTimeout(function() {
-    		$scope.activeScans.splice($scope.activeScans.indexOf(bindingId), 1)
+    	    $scope.$apply(function () {
+    	        $scope.activeScans.splice($scope.activeScans.indexOf(bindingId), 1)
+    	    });
         }, 3000);
     };
     
@@ -201,4 +217,34 @@ angular.module('SmartHomeManagerApp.controllers.setup',
 			}
 		});
     });
+}).controller('SetupWizardController', function($scope, discoveryResultRepository) {
+    $scope.getAll = function() {
+        discoveryResultRepository.getAll();
+    };
+    $scope.getAll();
+}).controller('SetupWizardBindingsController', function($scope, bindingRepository) {
+
+    bindingRepository.getAll();
+    $scope.selectBinding = function(bindingId) {
+        $scope.navigateTo('wizard/search/' + bindingId);
+    }
+}).controller('SetupWizardSearchBindingController', function($scope, discoveryResultRepository, discoveryService, thingTypeRepository) {
+    $scope.bindingId = $scope.path[4];
+    $scope.scanning = false;
+    $scope.filter = function(discoveryResult) {
+        return discoveryResult.thingUID.split(':')[0] === $scope.bindingId;
+    }
+    $scope.scan = function(bindingId) {
+        $scope.scanning = true;
+        discoveryService.scan({
+            'bindingId' : bindingId
+        }, function() {
+        });
+        setTimeout(function() {
+            $scope.$apply(function () {
+                $scope.scanning = false; 
+            });
+        }, 5000);
+    };
+    $scope.scan($scope.bindingId);
 });
