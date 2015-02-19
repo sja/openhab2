@@ -6,7 +6,7 @@
 <meta name="viewport"
 	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-<title>Eclipse SmartHome Manager</title>
+<title>Paper UI</title>
 
 
 <!-- lib css files -->
@@ -25,7 +25,6 @@
 	rel="stylesheet">
 
 <!-- custom css files -->
-<!--link type="text/css" href="css/main.css" rel="stylesheet"></link-->
 <link type="text/css" href="css/components.css" rel="stylesheet">
 <link type="text/css" href="css/layout.css" rel="stylesheet">
 <link type="text/css" href="css/views.css" rel="stylesheet">
@@ -36,8 +35,6 @@
 <link type="text/css" href="fonts/md-icons/md-icons.css"
 	rel="stylesheet" media="all">
 
-
-<!-- link rel="import" href="components/paper-elements/paper-elements.html"-->
 
 <link rel="shortcut icon" href="img/favicon.ico" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -54,10 +51,9 @@
 <body ng-controller="BodyController" ng-class="getSchemeClass()">
 	<nav class="menu slide-menu-left" ng-controller="NavController">
 		<div class="top clickable" ng-click="navigateToRoot()">
-			<img id="logo" alt="Eclipse SmartHome Logo" ng-if="isEshTheme()"
-				src="img/esh_logo.png"> <img id="logo" alt="openHAB Logo"
-				ng-if="!isEshTheme()" src="img/openhab_logo.png">
-			<h1 class="title">{{isEshTheme() ? 'SmartHome' : 'openHAB 2.0'}}</h1>
+			<img id="logo" alt="Eclipse SmartHome Logo"
+				src="img/esh_logo.png" />
+			<h1 class="title">SmartHome</h1>
 		</div>
 		<ul>
 			<!-- li><a href="#"><span class="icon icon-dashboard"></span>
@@ -65,17 +61,9 @@
 			<li ng-class="{active: isActive('control')}"><a href="#control"><span
 					class="icon icon-equalizer"></span> Control</a></li>
 			<li ng-class="{active: isActive('setup')}"><a
-				ng-click="open('setup')" class="clickable"><span
+				href="#setup/wizard" class="clickable"><span
 					class="icon md-icon-add-circle-outline"></span> Setup Wizard <span
 					ng-show="getNumberOfNewDiscoveryResults() > 0" class="badge">{{getNumberOfNewDiscoveryResults()}}</span></a>
-				<ul ng-show="isActive('setup')">
-					<li ng-class="{active: isSubActive('wizard')}"><a
-						href="#setup/wizard">Add Thing</a></li>
-					<li ng-class="{active: isSubActive('search')}"><a
-						href="#setup/search">Search</a></li>
-					<li ng-class="{active: isSubActive('manual-setup')}"><a
-						href="#setup/manual-setup/choose">Manual Setup</a></li>
-				</ul></li>
 			<!-- li><a href="#"><span class="icon icon-cogs"></span>
 					Automation</a></li-->
 			<li ng-class="{active: isActive('configuration')}"><a

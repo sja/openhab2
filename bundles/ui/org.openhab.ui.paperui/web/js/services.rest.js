@@ -86,7 +86,6 @@ angular.module('SmartHomeManagerApp.services.rest', []).factory('itemService', f
     return $resource('/rest/bindings', {}, {
         getAll : {
             method : 'GET',
-            cache : true,
             isArray : true
         },
     });
@@ -268,18 +267,25 @@ angular.module('SmartHomeManagerApp.services.rest', []).factory('itemService', f
             },
             url : '/rest/setup/things/channels/:channelUID'
         },
-    });
-}).factory('labelSetupService', function($resource) {
-    return $resource('/rest/setup/labels', {}, {
         setLabel : {
             method : 'PUT',
             params : {
-                itemName : '@itemName'
+                thingUID : '@thingUID'
             },
-            url : '/rest/setup/labels/:itemName',
             headers : {
                 'Content-Type' : 'text/plain'
-            }
+            },
+            url : '/rest/setup/labels/:thingUID'
+        },
+        setGroups : {
+            method : 'PUT',
+            params : {
+                thingUID : '@thingUID'
+            },
+            headers : {
+                'Content-Type' : 'application/json'
+            },
+            url : '/rest/setup/things/:thingUID/groups'
         }
     });
 }).factory('groupSetupService', function($resource) {

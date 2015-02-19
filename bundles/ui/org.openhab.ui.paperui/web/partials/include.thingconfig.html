@@ -1,28 +1,36 @@
 <div class="container">
-	<h3>{{thingType.label}}</h3>
-	<p>{{thingType.description}}</p>
+	<h3>Name and Groups</h3>
 
-	<div class="form-group parameter">
-		<md-text-float label="Thing Name" ng-model="thing.item.label"
-			class="long"></md-text-float>
+	<div>
+		<md-input-container> <input
+			ng-model="thing.item.label"> </md-input-container>
 	</div>
-	<div class="form-group parameter">
-		<md-text-float
-			ng-click="openGroupSelectionDialog(thing.item.groupNames, $event)"
-			label="Groups" ng-model="groups" class="long"></md-text-float>
+	<div ng-show="!thingType.bridge">
+		<md-checkbox ng-repeat="homeGroup in homeGroups"
+			ng-model="groupNames[homeGroup.name]" class="inline">{{homeGroup.label}}</md-checkbox>
+		<p ng-show="homeGroups.length == 0">
+			No groups defined yet.
+			<button class="md-button"
+				ng-click="navigateFromRoot('configuration/groups')">Add
+				Group</button>
+		</p>
 	</div>
 </div>
-
 <hr />
 <div class="container">
 	<h3>Configuration Parameters</h3>
 	<p>Configure parameters for the thing.</p>
-	<div class="form-group parameter"
-		ng-repeat="parameter in thingType.configParameters">
-		<md-text-float label="{{parameter.label}}"
-			ng-model="thing.configuration[parameter.name]"> </md-text-float>
-		<p class="hint">
-			<small>{{parameter.description}}</small>
-		</p>
+	<div class="row">
+		<div ng-repeat="parameter in thingType.configParameters">
+			<div class="parameter col-sm-6 col-xs-12">
+				<md-input-container> <label>{{parameter.label}}</label>
+				<input ng-model="thing.configuration[parameter.name]"
+					ng-required="parameter.required"> </md-input-container>
+				<p class="hint">
+					<small>{{parameter.description}}</small>
+				</p>
+			</div>
+			<div ng-if="$odd" class="clearfix"></div>
+		</div>
 	</div>
 </div>

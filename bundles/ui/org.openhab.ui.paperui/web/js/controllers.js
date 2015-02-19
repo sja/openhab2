@@ -49,7 +49,7 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
 
     var numberOfInboxEntries = -1;
     eventService.onEvent('smarthome/inbox/added/*', function(topic, discoveryResult) {
-    	toastService.showDefaultToast('New Inbox Entry: ' + discoveryResult.label, 'Show Inbox', 'setup');
+    	toastService.showDefaultToast('New Inbox Entry: ' + discoveryResult.label, 'Show Inbox', 'setup/wizard');
 	});
     eventService.onEvent('smarthome/update/*', function(topic, state) {
     	var itemName = topic.split('/')[2];

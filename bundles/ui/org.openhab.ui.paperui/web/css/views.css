@@ -173,6 +173,12 @@ section#main.control {
 	
 }
 
+/* Setup */
+
+.scan-indicator md-progress-circular {
+	margin-right: 25px;
+}
+
 /* Home Groups */
 
 .homeGroup.fab-item h3 {

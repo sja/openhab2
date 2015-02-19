@@ -1,38 +1,52 @@
-var DataCache = function($q, $rootScope, remoteService, dataType) {
+var DataCache = function($q, $rootScope, remoteService, dataType, staticData) {
 	var self = this;
-	var cacheEnabled = false;
+	var cacheEnabled = true;
 	var dirty = false;
+	var initialFetch = false;
+	
 	this.setDirty = function() {
 		this.dirty = true;
 	}
 	this.getAll = function(callback, refresh) {
 		var deferred = $q.defer();
-		remoteService.getAll(function(data) {
-			if((!cacheEnabled || (data.length != $rootScope.data[dataType].length) || self.dirty || refresh)) {
-				$rootScope.data[dataType] = data;
-				deferred.resolve(data);
-			} else {
-				deferred.resolve('No update');
-			}
-		});
         deferred.promise.then(function(res) {
-        	if(callback && res !== 'No update') {
-        		return callback(res);
-        	} else {
-        		return;
-        	}
+            if(callback && res !== 'No update') {
+                return callback(res);
+            } else {
+                return;
+            }
         }, function(res) {
-        	return;
+            return;
         }, function(res) {
-        	if(callback) {
-        		return callback(res);
-        	} else {
-        		return;
-        	}
+            if(callback) {
+                return callback(res);
+            } else {
+                return;
+            }
         });
-        if(cacheEnabled) {
-        	deferred.notify($rootScope.data[dataType]);
-        }
+		if(staticData && self.initialFetch) {
+		    deferred.resolve($rootScope.data[dataType]);
+		} else {
+    		remoteService.getAll(function(data) {
+    			if((!cacheEnabled || (data.length != $rootScope.data[dataType].length) || self.dirty || refresh)) {
+    			    self.initialFetch = true;
+    			    $rootScope.data[dataType] = data;
+    				self.dirty = false;
+    				deferred.resolve(data);
+    			} else {
+    			    // set initial data
+    			    if(!self.initialFetch) {
+    			        self.initialFetch = true;
+    			        $rootScope.data[dataType] = data;
+    			        self.dirty = false;
+    			    }
+    				deferred.resolve('No update');
+    			}
+    		});
+            if(cacheEnabled) {
+                deferred.notify($rootScope.data[dataType]);
+            }
+		}
         return deferred.promise;
 	};
 	this.getOne = function(condition, callback, refresh) {
@@ -70,18 +84,22 @@ var DataCache = function($q, $rootScope, remoteService, dataType) {
 		$rootScope.data[dataType].push(element);
 	};
 	this.remove = function(element) {
-		// TODO: implement
+	    $rootScope.data[dataType].splice($rootScope.data[dataType].indexOf(element), 1);
 	};
+	this.update = function(element) {
+        var index = $rootScope.data[dataType].indexOf(element);
+        $rootScope.data[dataType][index] = element;
+    };
 }
 
 angular.module('SmartHomeManagerApp.services.repositories', []).factory('bindingRepository', 
 		function($q, $rootScope, bindingService) {
 	$rootScope.data.bindings = [];
-	return new DataCache($q, $rootScope, bindingService, 'bindings');
+	return new DataCache($q, $rootScope, bindingService, 'bindings', true);
 }).factory('thingTypeRepository', 
 		function($q, $rootScope, thingTypeService) {
 	$rootScope.data.thingTypes = [];
-	return new DataCache($q, $rootScope, thingTypeService, 'thingTypes');
+	return new DataCache($q, $rootScope, thingTypeService, 'thingTypes', true);
 }).factory('discoveryResultRepository', 
 		function($q, $rootScope, inboxService, eventService) {
 	var dataCache = new DataCache($q, $rootScope, inboxService, 'discoveryResults')
@@ -92,17 +110,17 @@ angular.module('SmartHomeManagerApp.services.repositories', []).factory('binding
 	return dataCache;
 }).factory('thingRepository', 
 		function($q, $rootScope, thingSetupService) {
-	var dataCache = new DataCache($q, $rootScope, thingSetupService, 'things')
+	var dataCache = new DataCache($q, $rootScope, thingSetupService, 'things', true)
 	$rootScope.data.things = [];
 	return dataCache;
 }).factory('homeGroupRepository', 
 		function($q, $rootScope, groupSetupService) {
-	var dataCache = new DataCache($q, $rootScope, groupSetupService, 'homeGroups')
+	var dataCache = new DataCache($q, $rootScope, groupSetupService, 'homeGroups', true)
 	$rootScope.data.homeGroups = [];
 	return dataCache;
 }).factory('itemRepository', 
 		function($q, $rootScope, itemService) {
-	var dataCache = new DataCache($q, $rootScope, itemService, 'items')
+	var dataCache = new DataCache($q, $rootScope, itemService, 'items', true)
 	$rootScope.data.items = [];
 	return dataCache;
 });

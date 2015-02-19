@@ -4,7 +4,7 @@ function getThingTypeUID(thingUID) {
 };
 
 angular.module('SmartHomeManagerApp.controllers.setup', 
-[]).controller('SetupPageController', function($scope, $location, thingTypeRepository) {
+[]).controller('SetupPageController', function($scope, $location, thingTypeRepository, bindingRepository) {
     $scope.navigateTo = function(path) {
         $location.path('setup/' + path);
     }
@@ -17,53 +17,9 @@ angular.module('SmartHomeManagerApp.controllers.setup',
             $scope.thingTypes[thingType.UID] = thingType;
         })
     });
-}).controller('InboxController', function($scope, $timeout, $mdDialog, inboxService, discoveryResultRepository, thingTypeRepository, toastService) {
-	$scope.setSubtitle(['Search']);
+}).controller('InboxController', function($scope, $timeout, $mdDialog, $q, inboxService, discoveryResultRepository, 
+        thingTypeRepository, thingSetupService, toastService) {
     $scope.setHeaderText('Shows a list of found things in your home.')
-	$scope.approve = function(thingUID, event) {
-    	$mdDialog.show({
-			controller : 'ApproveInboxEntryDialogController',
-			templateUrl : 'partials/dialog.approveinboxentry.html',
-			targetEvent : event,
-			locals: {discoveryResult: discoveryResultRepository.find(function(discoveryResult) {
-				return discoveryResult.thingUID === thingUID;
-			})}
-		}).then(function(label) {
-			inboxService.approve({
-	            'thingUID' : thingUID
-	        }, label, function() {
-	            $scope.getAll();
-	            toastService.showDefaultToast('Thing added.', 'Show Thing', 'configuration/things/view/' + thingUID);
-	        });
-		});
-    };
-    $scope.ignore = function(thingUID) {
-        inboxService.ignore({
-            'thingUID' : thingUID
-        }, function() {
-            $scope.getAll();
-        });
-    };
-    $scope.remove = function(thingUID, event) {
-    	var discoveryResult = discoveryResultRepository.find(function(discoveryResult) {
-			return discoveryResult.thingUID === thingUID;
-		});
-    	var confirm = $mdDialog.confirm()
-	      .title('Remove ' + discoveryResult.label)
-	      .content('Would you like to remove the discovery result from the inbox?')
-	      .ariaLabel('Remove Discovery Result')
-	      .ok('Remove')
-	      .cancel('Cancel')
-	      .targetEvent(event);
-	    $mdDialog.show(confirm).then(function() {
-	    	inboxService.remove({
-	            'thingUID' : thingUID
-	        }, function() {
-	            $scope.getAll();
-	            toastService.showSuccessToast('Inbox entry removed');
-	        });
-	    });
-    };
     
     $scope.showScanDialog = function(event) {
 		$mdDialog.show({
@@ -76,7 +32,60 @@ angular.module('SmartHomeManagerApp.controllers.setup',
     $scope.getAll = function() {
     	discoveryResultRepository.getAll();
     };
-    $scope.getAll();
+}).controller('InboxEntryController', function($scope, $mdDialog, $q, inboxService, discoveryResultRepository, 
+        thingTypeRepository, thingSetupService, toastService, thingRepository) {
+    $scope.approve = function(thingUID, event) {
+        $mdDialog.show({
+            controller : 'ApproveInboxEntryDialogController',
+            templateUrl : 'partials/dialog.approveinboxentry.html',
+            targetEvent : event,
+            locals: {discoveryResult: discoveryResultRepository.find(function(discoveryResult) {
+                return discoveryResult.thingUID === thingUID;
+            })}
+        }).then(function(result) {
+            inboxService.approve({'thingUID' : thingUID }, result.label).$promise.then(function() {
+                return thingSetupService.setGroups({'thingUID' : thingUID }, result.groupNames).$promise;
+            }).then(function() {
+                thingRepository.setDirty(true);
+
+                toastService.showDefaultToast('Thing added.', 'Show Thing', 'configuration/things/view/' + thingUID);
+                var thingTypeUID = $scope.getThingTypeUID(thingUID);
+                var thingType = thingTypeRepository.find(function(thingType) {
+                    return thingTypeUID === thingType.UID;
+                });
+                if(thingType && thingType.bridge) {
+                    $scope.navigateTo('wizard/search/' + thingUID.split(':')[0]);
+                }
+            });
+        });
+    };
+    $scope.ignore = function(thingUID) {
+        inboxService.ignore({
+            'thingUID' : thingUID
+        }, function() {
+            $scope.getAll();
+        });
+    };
+    $scope.remove = function(thingUID, event) {
+        var discoveryResult = discoveryResultRepository.find(function(discoveryResult) {
+            return discoveryResult.thingUID === thingUID;
+        });
+        var confirm = $mdDialog.confirm()
+          .title('Remove ' + discoveryResult.label)
+          .content('Would you like to remove the discovery result from the inbox?')
+          .ariaLabel('Remove Discovery Result')
+          .ok('Remove')
+          .cancel('Cancel')
+          .targetEvent(event);
+        $mdDialog.show(confirm).then(function() {
+            inboxService.remove({
+                'thingUID' : thingUID
+            }, function() {
+                $scope.getAll();
+                toastService.showSuccessToast('Inbox entry removed');
+            });
+        });
+    };
 }).controller('ScanDialogController', function($scope, $rootScope, $timeout, $mdDialog, discoveryService, bindingRepository) {
     $scope.supportedBindings = [];
     $scope.activeScans = [];
@@ -114,14 +123,38 @@ angular.module('SmartHomeManagerApp.controllers.setup',
     $scope.close = function() {
 		$mdDialog.hide();
 	}
-}).controller('ApproveInboxEntryDialogController', function($scope, $mdDialog, discoveryResult) {
+}).controller('ApproveInboxEntryDialogController', function($scope, $mdDialog, discoveryResult, thingTypeRepository, 
+        homeGroupRepository) {
 	$scope.discoveryResult = discoveryResult;
 	$scope.label = discoveryResult.label;
+	$scope.homeGroups = [];
+    $scope.groupNames = [];
+    $scope.thingType = null;
+    var thingTypeUID = getThingTypeUID(discoveryResult.thingUID);
+    thingTypeRepository.getOne(function(thingType) {
+        return thingType.UID === thingTypeUID;
+    }, function(thingType) {
+        $scope.thingType = thingType;
+    });
+
+    homeGroupRepository.getAll(function(homeGroups) {
+        $.each(homeGroups, function(i, homeGroup) {
+            $scope.groupNames[homeGroup.name] = false;
+        });
+        $scope.homeGroups = homeGroups;
+    });
+    
 	$scope.close = function() {
 		$mdDialog.cancel();
 	}
 	$scope.approve = function(label) {
-		$mdDialog.hide(label);
+	    var selectedGroupNames = [];
+	    for (var groupName in $scope.groupNames) {
+            if($scope.groupNames[groupName]) {
+                selectedGroupNames.push(groupName);
+            }
+        }
+		$mdDialog.hide({label: label,  groupNames: selectedGroupNames});
 	}
 }).controller('ManualSetupChooseController', function($scope, bindingRepository, thingTypeRepository, thingSetupService) {
 	$scope.setSubtitle(['Manual Setup']);
@@ -136,7 +169,7 @@ angular.module('SmartHomeManagerApp.controllers.setup',
 	});
    
 }).controller('ManualSetupConfigureController', function($scope, $routeParams, $mdDialog, toastService, 
-		bindingRepository, thingTypeRepository, thingSetupService, homeGroupRepository) {
+		bindingRepository, thingTypeRepository, thingSetupService, homeGroupRepository, thingRepository) {
 	
 	var thingTypeUID = $routeParams.thingTypeUID;
 	
@@ -159,38 +192,28 @@ angular.module('SmartHomeManagerApp.controllers.setup',
 			groupNames: []
 		}
 	}
-	
-	$scope.openGroupSelectionDialog = function(groupNames, event) {
-		$mdDialog.show({
-			controller : 'SelectGroupsDialogController',
-			templateUrl : 'partials/dialog.groupselection.html',
-			targetEvent : event,
-			locals: {
-				groupNames: groupNames
-			}
-		}).then(function(selectedGroupNames) {
-			$scope.thing.item.groupNames = selectedGroupNames;
-			$scope.setGroupLabels();
-		});
-	};
-	$scope.setGroupLabels = function() {
-		homeGroupRepository.getAll(function(homeGroups) {
-			var groupLabels = [];
-			for (var i = 0; i < homeGroups.length; i++) {
-				var homeGroup = homeGroups[i];
-				if($scope.thing.item.groupNames.indexOf(homeGroup.name) >= 0) {
-					groupLabels.push(homeGroup.label);
-				}
-			}
-			$scope.groups = groupLabels.join(', ');
-		});
-	}
-	$scope.setGroupLabels();
-	
+	$scope.homeGroups = [];
+    $scope.groupNames = [];
+
+    homeGroupRepository.getAll(function(homeGroups) {
+        $.each(homeGroups, function(i, homeGroup) {
+            $scope.groupNames[homeGroup.name] = false;
+        });
+        $scope.homeGroups = homeGroups;
+    });
+
 	$scope.addThing = function(thing) {
+	    
+	    for (var groupName in $scope.groupNames) {
+            if($scope.groupNames[groupName]) {
+                thing.item.groupNames.push(groupName);
+            }
+        }
 		thingSetupService.add(thing, function() {
+		    thingRepository.add(thing);
+		    homeGroupRepository.setDirty(true);
 			toastService.showDefaultToast('Thing added');
-			$scope.navigateFromRoot('configuration/things/view/' + thing.UID);
+			$scope.navigateTo('wizard/search/' + $scope.thingType.UID.split(':')[0]);
 		});
 	};
 	
@@ -201,6 +224,7 @@ angular.module('SmartHomeManagerApp.controllers.setup',
     	$scope.setHeaderText(thingType.description);
 		$scope.thingType = thingType;
 		$scope.thing.UID = thingType.UID + ':' + generateUUID();
+		$scope.thing.item.label = thingType.label;
 		$.each($scope.thingType.configParameters, function(i, parameter) {
 			if(parameter.defaultValue !== 'null') {
 				if(parameter.type === 'TEXT') {
@@ -223,13 +247,32 @@ angular.module('SmartHomeManagerApp.controllers.setup',
     };
     $scope.getAll();
 }).controller('SetupWizardBindingsController', function($scope, bindingRepository) {
-
+    $scope.setSubtitle(['Choose Binding']);
+    $scope.setHeaderText('Choose a Binding for which you want to add new things.');
     bindingRepository.getAll();
     $scope.selectBinding = function(bindingId) {
         $scope.navigateTo('wizard/search/' + bindingId);
     }
-}).controller('SetupWizardSearchBindingController', function($scope, discoveryResultRepository, discoveryService, thingTypeRepository) {
+}).controller('SetupWizardSearchBindingController', function($scope, discoveryResultRepository, discoveryService, 
+        thingTypeRepository, bindingRepository) {
+    
     $scope.bindingId = $scope.path[4];
+    var binding = bindingRepository.find(function(binding) {
+        return binding.id === $scope.bindingId;
+    });
+    $scope.setSubtitle([binding ? binding.name : '', 'Search']);
+    $scope.setHeaderText('Searching for new things for the ' + (binding ? binding.name : '') + '.');
+    
+    $scope.discoverySupported = true;
+    discoveryService.getAll(function(supportedBindings) {
+        if(supportedBindings.indexOf($scope.bindingId) >= 0) {
+            $scope.discoverySupported = true;
+            $scope.scan($scope.bindingId);
+        } else {
+            $scope.discoverySupported = false;
+        } 
+    });
+    
     $scope.scanning = false;
     $scope.filter = function(discoveryResult) {
         return discoveryResult.thingUID.split(':')[0] === $scope.bindingId;
@@ -246,5 +289,18 @@ angular.module('SmartHomeManagerApp.controllers.setup',
             });
         }, 5000);
     };
-    $scope.scan($scope.bindingId);
+}).controller('SetupWizardThingTypesController', function($scope, bindingRepository) {
+    $scope.bindingId = $scope.path[4];
+    var binding = bindingRepository.find(function(binding) {
+        return binding.id === $scope.bindingId;
+    });
+    $scope.setSubtitle([binding ? binding.name : '', 'Choose Thing']);
+    $scope.setHeaderText('Choose a Thing from the ' + (binding ? binding.name : '') + ' which you want to add.');
+    
+    $scope.selectThingType = function(thingTypeUID) {
+        $scope.navigateTo('wizard/add/' + thingTypeUID);
+    }
+    $scope.filter = function(thingType) {
+        return thingType.UID.split(':')[0] === $scope.bindingId;
+    }
 });

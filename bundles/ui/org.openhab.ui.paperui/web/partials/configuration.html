@@ -45,6 +45,10 @@
 			</div>
 		</div>
 		<div class="container">
+			<p class="text-center" ng-show="data.homeGroups.length == 0">
+				No groups defined yet.
+				<button class="md-button" ng-click="add()">Add Group</button>
+			</p>
 			<div class="groups">
 				<div class="clickable" ng-repeat="homeGroup in data.homeGroups">
 					<div class="homeGroup fab-item text-left">
@@ -72,11 +76,15 @@
 			<div class="container">
 				<div class="toolbar">
 					<md-button class="md-fab md-icon-add"
-						ng-click="navigateFromRoot('setup/search')"></md-button>
+						ng-click="navigateFromRoot('setup/wizard')"></md-button>
 				</div>
 			</div>
 		</div>
 		<div class="container">
+			<p class="text-center" ng-show="data.things.length == 0">
+				No things configured yet.
+				<button class="md-button" ng-click="navigateFromRoot('setup/wizard')">Add Things</button>
+			</p>
 			<div class="things">
 				<div class="clickable"
 					ng-repeat="thing in data.things | filter:search">
@@ -141,8 +149,8 @@
 			</div>
 			<button class="md-button" ng-init="showAdvanced = false"
 				ng-click="showAdvanced = !showAdvanced"
-				ng-show="getChannels(true).length > 0">{{showAdvanced ? 'Show
-				Less' : 'Show More'}}</button>
+				ng-show="getChannels(true).length > 0">{{showAdvanced ?
+				'Show Less' : 'Show More'}}</button>
 			<div class="advanced-channels" ng-if="showAdvanced">
 				<div class="channel fab-item"
 					ng-repeat="channel in getChannels(true)">

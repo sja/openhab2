@@ -46,11 +46,12 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 			templateUrl : 'partials/dialog.addgroup.html',
 			targetEvent : event
 		}).then(function(label) {
-			groupSetupService.add({
-	            name : 'home_group_' + $scope.generateUUID(),
-	            label: label
-	        }, function() {
-	            $scope.getAll();
+			var homeGroup = {
+	                name : 'home_group_' + $scope.generateUUID(),
+	                label: label
+            };
+		    groupSetupService.add(homeGroup, function() {
+	            homeGroupRepository.add(homeGroup);
 	            toastService.showDefaultToast('Group added.');
 	        });
 		});
@@ -67,7 +68,7 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	    	groupSetupService.remove({
 	            itemName : homeGroup.name
 	        }, function() {
-	            $scope.getAll();
+	            homeGroupRepository.remove(homeGroup);
 	            toastService.showSuccessToast('Group removed');
 	        });
 	    });
@@ -82,11 +83,11 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	$scope.add  = function(label) {		
 		$mdDialog.hide(label);
 	}
-}).controller('ThingController', function($scope, $timeout, $mdDialog, thingTypeRepository, thingRepository, thingSetupService, toastService) {
+}).controller('ThingController', function($scope, $timeout, $mdDialog, thingRepository, 
+        thingSetupService, toastService, homeGroupRepository) {
 	$scope.setSubtitle(['Things']);
 	$scope.setHeaderText('Shows all configured Things.');
 	
-	thingTypeRepository.getAll();
 	thingRepository.getAll();
 	
 	$scope.refresh = function() {
@@ -101,15 +102,18 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	      .cancel('Cancel')
 	      .targetEvent(event);
 	    $mdDialog.show(confirm).then(function() {
-	    	thingSetupService.remove({thingUID: thing.UID});
-	    	toastService.showDefaultToast('Thing removed');
-	    	$scope.refresh();
+	    	thingSetupService.remove({thingUID: thing.UID}, function() {
+                thingRepository.remove(thing);
+                homeGroupRepository.setDirty(true);
+                toastService.showDefaultToast('Thing removed');
+                $scope.navigateTo('things');
+            });
 	    });
 	    event.stopImmediatePropagation();
 	};
 	
 }).controller('ViewThingController', function($scope, $mdDialog, toastService, thingTypeRepository, 
-		thingRepository, thingSetupService) {
+		thingRepository, thingSetupService, homeGroupRepository) {
 	
 	var thingUID = $scope.path[4];
 	var thingTypeUID = getThingTypeUID(thingUID);
@@ -134,9 +138,12 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	      .cancel('Cancel')
 	      .targetEvent(event);
 	    $mdDialog.show(confirm).then(function() {
-	    	thingSetupService.remove({thingUID: thing.UID});
-	    	toastService.showDefaultToast('Thing removed');
-	    	$scope.navigateTo('things');
+	    	thingSetupService.remove({thingUID: thing.UID}, function() {
+	    	    thingRepository.remove(thing);
+	    	    homeGroupRepository.setDirty(true);
+	    	    toastService.showDefaultToast('Thing removed');
+	            $scope.navigateTo('things');
+            });
 	    });
 	};
 	
@@ -201,19 +208,8 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 	$scope.groups = [];
 	$scope.thingType;
 	
-	$scope.openGroupSelectionDialog = function(groupNames, event) {
-		$mdDialog.show({
-			controller : 'SelectGroupsDialogController',
-			templateUrl : 'partials/dialog.groupselection.html',
-			targetEvent : event,
-			locals: {
-				groupNames: groupNames
-			}
-		}).then(function(selectedGroupNames) {
-			$scope.thing.item.groupNames = selectedGroupNames;
-			$scope.setGroupLabels();
-		});
-	};
+	$scope.homeGroups = [];
+    $scope.groupNames = [];
 	
 	$scope.update = function(thing) {
 		for (var i = 0; i < $scope.thingType.configParameters.length; i++) {
@@ -230,29 +226,39 @@ angular.module('SmartHomeManagerApp.controllers.configuration',
 				}
 			}
 		}
+		for (var groupName in $scope.groupNames) {
+            if($scope.groupNames[groupName]) {
+                thing.item.groupNames.push(groupName);
+            } else {
+                var index = thing.item.groupNames.indexOf(groupName);
+                if (index > -1) {
+                    thing.item.groupNames.splice(index, 1);
+                }
+            }
+        }
 		thingSetupService.update(thing, function() {
+	        thingRepository.update(thing);
+	        homeGroupRepository.setDirty(true);
 			toastService.showDefaultToast('Thing updated');
 			$scope.navigateTo('things/view/' + thing.UID);
 		});
 	};
-	$scope.setGroupLabels = function() {
-		homeGroupRepository.getAll(function(homeGroups) {
-			var groupLabels = [];
-			for (var i = 0; i < homeGroups.length; i++) {
-				var homeGroup = homeGroups[i];
-				if($scope.thing.item.groupNames.indexOf(homeGroup.name) >= 0) {
-					groupLabels.push(homeGroup.label);
-				}
-			}
-			$scope.groups = groupLabels.join(', ');
-		});
-	}
+	
 	$scope.getThing = function(refresh) {
 	    	thingRepository.getOne(function(thing) {
 	    		return thing.UID === thingUID;
 	    	}, function(thing) {
 	    		$scope.thing = thing;
-	    		$scope.setGroupLabels();
+	    	    homeGroupRepository.getAll(function(homeGroups) {
+	    	        $.each(homeGroups, function(i, homeGroup) {
+	    	            if($scope.thing.item.groupNames.indexOf(homeGroup.name) >= 0) {
+	    	                $scope.groupNames[homeGroup.name] = true;
+	    	            } else {
+	    	                $scope.groupNames[homeGroup.name] = false;
+	    	            }
+	    	        });
+	    	        $scope.homeGroups = homeGroups;
+	    	    });
 	    		$scope.setTitle('Edit ' + thing.item.label);
 	    	}, refresh);	
 		}

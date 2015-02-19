@@ -224,11 +224,20 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
         	$scope.item.state = 0;
         }
     }
+	$scope.pending = false;
+	$scope.brightnessValue = null;
 	$scope.setBrightness = function(brightness) {
-        var brightnessValue = brightness === 0 ? '0' : brightness;
-        itemService.sendCommand({
-            itemName : $scope.item.name
-        }, brightnessValue);
+	    $scope.brightnessValue = brightness === 0 ? '0' : brightness;
+        // send updates every 300 ms only
+        if(!$scope.pending) {
+            $timeout(function() {
+                itemService.sendCommand({
+                    itemName : $scope.item.name
+                }, $scope.brightnessValue);
+                $scope.pending = false;
+            }, 300);
+            $scope.pending = true;
+        }
     }
 	$scope.$watch('item.state', function() {
 		var brightness = parseInt($scope.item.state);

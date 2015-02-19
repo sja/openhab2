@@ -68,8 +68,8 @@
 	color: white !important;
 }
 
-
 /* Tabs */
+
 md-tabs {
 	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
 }
@@ -113,6 +113,7 @@ md-tabs.md-default-theme .md-header {
 }
 
 /* Radio Button */
+
 md-radio-group.md-default-theme:focus {
 	border-color: transparent;	
 }
@@ -132,6 +133,17 @@ md-radio-button.md-default-theme.md-checked .md-off, md-switch.md-default .md-sw
 md-radio-button.md-default-theme.md-checked .md-ink-ripple, md-switch.md-default .md-switch-thumb.md-checked .md-ink-ripple {
 	color: #01324D;
 }
+
+/* Checkbox */
+
+md-checkbox.md-default-theme.md-checked .md-icon {
+	background-color: #4CAF50;
+}
+
+md-checkbox.inline {
+	display: inline;
+	margin: 0px 15px 0px 0px;
+} 
 
 /* Switch */
 
@@ -325,15 +337,19 @@ md-input-group.md-default-theme input, md-input-group.md-default-theme textarea 
 }
 
 md-input-container.md-default-theme:not(.md-input-invalid).md-input-focused .md-input {
-	border-color: #01324D;
+	border-color: #4CAF50;
 }
 
 md-input-group.md-default-theme.md-input-focused input, md-input-group.md-default-theme.md-input-focused textarea {
-	border-color: #01324D;
+	border-color: #4CAF50;
 }
 
-.form-group p.hint {
-	margin-top: -10px;
+md-input-container.md-default-theme:not(.md-input-invalid).md-input-focused label {
+	color: #4CAF50;
+}
+
+p.hint {
+	margin-top: -20px;
 	color: #777;
 }
 
@@ -374,4 +390,42 @@ select.form-control {
 
 md-backdrop.md-opaque.md-default-theme {
 	z-index: 21;
+}
+
+/* Progress Indicator */
+
+md-progress-circular.md-default-theme .md-inner .md-right .md-half-circle {
+	border-right-color: #4CAF50;
+}
+
+md-progress-circular.md-default-theme .md-inner .md-left .md-half-circle, 
+md-progress-circular.md-default-theme .md-inner .md-right .md-half-circle {
+	border-top-color: #4CAF50;
+}
+
+md-progress-circular.md-default-theme .md-inner .md-left .md-half-circle {
+	border-left-color: #4CAF50;
+}
+
+/* Selection List */
+
+.selection-list > div {
+	position: relative;
+}
+
+.selection-list > div:hover {
+	cursor: pointer;
+}
+
+.selection-list h3 {
+	margin: 10px 0px;
+}
+
+.selection-list .md-icon-chevron-right {
+	font-size: 30px;
+	color: #999;
+}
+
+.selection-list hr {
+	margin: 5px 0px; 
 }
