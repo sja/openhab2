@@ -104,7 +104,6 @@ UpnpIOParticipant, DiscoveryListener {
 		@Override
 		public void run() {
 			try {
-				updateCurrentURIFormatted();
 				updateZoneInfo();
 				updateRunningAlarmProperties();
 				updateLed();
@@ -142,7 +141,7 @@ UpnpIOParticipant, DiscoveryListener {
 			pollingJob.cancel(true);
 			pollingJob = null;
 		}
-		
+
 		if (getThing().getStatus() == ThingStatus.ONLINE) {
 			logger.debug("Setting status for thing '{}' to OFFLINE", getThing()
 					.getUID());
@@ -452,6 +451,14 @@ UpnpIOParticipant, DiscoveryListener {
 							stateMap.get("CurrentAlbum")) : UnDefType.UNDEF);
 			break;
 		}
+		case "CurrentTrackMetaData": {
+			updateTrackMetaData();
+			break;
+		}
+		case "CurrentURI": {
+			updateCurrentURIFormatted();
+			break;
+		}
 		}
 
 	}
@@ -587,6 +594,42 @@ UpnpIOParticipant, DiscoveryListener {
 		return getUDN().equals(getCoordinator());
 	}
 
+	protected void updateTrackMetaData() {
+
+		SonosMetaData currentTrack = getTrackMetadata();
+
+		if (currentTrack != null) {
+
+			String artist = null;
+			if (currentTrack.getAlbumArtist().equals("")) {
+				artist = currentTrack.getCreator();
+			} else {
+				artist = currentTrack.getAlbumArtist();
+			}
+
+			String album = currentTrack.getAlbum();
+			String title = null;
+			if(!currentTrack.getTitle().contains("x-sonosapi-stream")) {
+				title = currentTrack.getTitle();
+			}
+
+			// update individual variables
+			this.onValueReceived("CurrentArtist", (artist != null) ? artist
+					: "", "AVTransport");
+			if(title!=null) {
+				this.onValueReceived("CurrentTitle", (title != null) ? title : "",
+						"AVTransport");
+			}
+			this.onValueReceived("CurrentAlbum", (album != null) ? album : "",
+					"AVTransport");
+
+			if(currentTrack.getTitle().contains("x-sonosapi-stream")) {
+				updateMediaInfo();
+			}
+		}
+
+	}
+
 	protected void updateCurrentURIFormatted() {
 
 		String currentURI = null;
@@ -594,7 +637,10 @@ UpnpIOParticipant, DiscoveryListener {
 		String coordinator = getCoordinator();
 		ZonePlayerHandler coordinatorHandler = getHandlerByName(coordinator);
 
-		if (!isGroupCoordinator() && coordinatorHandler != null) {
+		if (coordinatorHandler != null && coordinatorHandler != this) {
+			if(getCurrentURI().contains("x-rincon")) {
+				coordinatorHandler.updateMediaInfo();
+			}
 			currentURI = coordinatorHandler.getCurrentURI();
 			currentTrack = coordinatorHandler.getTrackMetadata();
 		} else {
@@ -603,11 +649,9 @@ UpnpIOParticipant, DiscoveryListener {
 		}
 
 		if (currentURI != null) {
-
-			String resultString = null;
-			String artist = null;
-			String album = null;
-			String title = null;
+			String title = stateMap.get("CurrentTitle");
+			String resultString = stateMap.get("CurrentURIFormatted");
+			boolean needsUpdating = false;
 
 			if (opmlPartnerID != null && currentURI.contains("x-sonosapi-stream")) {
 
@@ -643,7 +687,7 @@ UpnpIOParticipant, DiscoveryListener {
 						List<String> fields = SonosXMLParser
 								.getRadioTimeFromXML(response);
 
-						if (fields != null) {
+						if (fields != null && fields.size() > 0) {
 
 							resultString = new String();
 							// radio name should be first field
@@ -657,47 +701,34 @@ UpnpIOParticipant, DiscoveryListener {
 									resultString = resultString + " - ";
 								}
 							}
+
+							needsUpdating = true;
 						}
 					}
-				} else {
-					resultString = stateMap.get("CurrentURIFormatted");
-					title = stateMap.get("CurrentTitle");
 				}
-
 			} else {
-				if (currentTrack != null) {
-					if (!currentTrack.getTitle().contains("x-sonosapi-stream")) {
-						if (currentTrack.getAlbumArtist().equals("")) {
-							resultString = currentTrack.getCreator() + " - "
-									+ currentTrack.getAlbum() + " - "
-									+ currentTrack.getTitle();
-							artist = currentTrack.getCreator();
-						} else {
-							resultString = currentTrack.getAlbumArtist()
-									+ " - " + currentTrack.getAlbum() + " - "
-									+ currentTrack.getTitle();
-							artist = currentTrack.getAlbumArtist();
-						}
 
-						album = currentTrack.getAlbum();
-						title = currentTrack.getTitle();
+				if (currentTrack != null && !currentTrack.getTitle().contains("x-sonosapi-stream")) {
+					if (currentTrack.getAlbumArtist().equals("")) {
+						resultString = currentTrack.getCreator() + " - "
+								+ currentTrack.getAlbum() + " - "
+								+ currentTrack.getTitle();
+					} else {
+						resultString = currentTrack.getAlbumArtist()
+								+ " - " + currentTrack.getAlbum() + " - "
+								+ currentTrack.getTitle();
 					}
 
-				} else {
-					resultString = "";
+					needsUpdating = true;
 				}
 			}
 
-			this.onValueReceived("CurrentURIFormatted", resultString,
-					"AVTransport");
-
-			// update individual variables
-			this.onValueReceived("CurrentArtist", (artist != null) ? artist
-					: " ", "AVTransport");
-			this.onValueReceived("CurrentTitle", (title != null) ? title : " ",
-					"AVTransport");
-			this.onValueReceived("CurrentAlbum", (album != null) ? album : " ",
-					"AVTransport");
+			if(needsUpdating) {
+				this.onValueReceived("CurrentURIFormatted", (resultString != null) ? resultString : "",
+						"AVTransport");
+				this.onValueReceived("CurrentTitle", (title != null) ? title : "",
+						"AVTransport");
+			}
 		}
 	}
 
@@ -716,7 +747,6 @@ UpnpIOParticipant, DiscoveryListener {
 	}
 
 	public String getCurrentURI() {
-		updateMediaInfo();
 		return stateMap.get("CurrentURI");
 	}
 
@@ -882,6 +912,9 @@ UpnpIOParticipant, DiscoveryListener {
 			savedState = new SonosZonePlayerState();
 			String currentURI = getCurrentURI();
 
+			savedState.transportState = getTransportState();
+			savedState.volume = getVolume();
+
 			if (currentURI != null) {
 
 				if (currentURI.contains("x-sonosapi-stream:")) {
@@ -971,8 +1004,6 @@ UpnpIOParticipant, DiscoveryListener {
 					}
 				}
 
-				savedState.transportState = getTransportState();
-				savedState.volume = getVolume();
 				savedState.relTime = getPosition();
 			} else {
 				savedState.entry = null;
@@ -990,7 +1021,9 @@ UpnpIOParticipant, DiscoveryListener {
 		synchronized (this) {
 			if (savedState != null) {
 				// put settings back
-				setVolume(DecimalType.valueOf(savedState.volume));
+				if(savedState.volume != null) {
+					setVolume(DecimalType.valueOf(savedState.volume));
+				}
 
 				if (isCoordinator()) {
 					if (savedState.entry != null) {
@@ -1013,7 +1046,9 @@ UpnpIOParticipant, DiscoveryListener {
 							setCurrentURI(savedState.entry);
 							setPosition(savedState.relTime);
 						}
+					}
 
+					if(savedState.transportState != null) {
 						if (savedState.transportState.equals("PLAYING")) {
 							play();
 						} else if (savedState.transportState.equals("STOPPED")) {
@@ -1236,25 +1271,25 @@ UpnpIOParticipant, DiscoveryListener {
 		if (command != null && command instanceof StringType) {
 
 			String remotePlayerName = command.toString();
-
-			Thing coordinatorThing = thingRegistry.get(new ThingUID(
-					ZONEPLAYER_THING_TYPE_UID, getCoordinator()));
-			ZonePlayerHandler coordinatorHandler = (ZonePlayerHandler) coordinatorThing
-					.getHandler();
+			String coordinatorUDN = getCoordinator();
+			ZonePlayerHandler coordinatorHandler = getHandlerByName(coordinatorUDN);
 			ZonePlayerHandler remoteHandler = getHandlerByName(remotePlayerName);
 
-			// stop whatever is currently playing
-			coordinatorHandler.stop();
+			if(coordinatorHandler!=null && remoteHandler!=null) {
 
-			// set the URI
-			coordinatorHandler.setCurrentURI("x-rincon-stream:"
-					+ remoteHandler.getConfig().get(UDN), "");
+				// stop whatever is currently playing
+				coordinatorHandler.stop();
 
-			// take the system off mute
-			coordinatorHandler.setMute(OnOffType.OFF);
+				// set the URI
+				coordinatorHandler.setCurrentURI("x-rincon-stream:"
+						+ remoteHandler.getConfig().get(UDN), "");
 
-			// start jammin'
-			coordinatorHandler.play();
+				// take the system off mute
+				coordinatorHandler.setMute(OnOffType.OFF);
+
+				// start jammin'
+				coordinatorHandler.play();
+			}
 		}
 	}
 
@@ -1263,7 +1298,7 @@ UpnpIOParticipant, DiscoveryListener {
 		if(thingRegistry!=null) {
 			Thing thing = thingRegistry.get(new ThingUID(
 					ZONEPLAYER_THING_TYPE_UID, remotePlayerName));
-	
+
 			if (thing == null) {
 				Collection<Thing> allThings = thingRegistry.getAll();
 				for (Thing aThing : allThings) {
