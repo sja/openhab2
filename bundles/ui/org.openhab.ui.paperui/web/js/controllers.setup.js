@@ -15,7 +15,7 @@ angular.module('SmartHomeManagerApp.controllers.setup',
     thingTypeRepository.getAll(function(thingTypes) {
         $.each(thingTypes, function(i, thingType) {
             $scope.thingTypes[thingType.UID] = thingType;
-        })
+        });
     });
 }).controller('InboxController', function($scope, $timeout, $mdDialog, $q, inboxService, discoveryResultRepository, 
         thingTypeRepository, thingSetupService, toastService) {
@@ -55,6 +55,8 @@ angular.module('SmartHomeManagerApp.controllers.setup',
                 });
                 if(thingType && thingType.bridge) {
                     $scope.navigateTo('wizard/search/' + thingUID.split(':')[0]);
+                } else {
+                	discoveryResultRepository.getAll(true);
                 }
             });
         });
@@ -287,7 +289,7 @@ angular.module('SmartHomeManagerApp.controllers.setup',
             $scope.$apply(function () {
                 $scope.scanning = false; 
             });
-        }, 5000);
+        }, 10000);
     };
 }).controller('SetupWizardThingTypesController', function($scope, bindingRepository) {
     $scope.bindingId = $scope.path[4];

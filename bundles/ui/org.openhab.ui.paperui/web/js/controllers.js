@@ -54,12 +54,35 @@ angular.module('SmartHomeManagerApp.controllers', []).controller('BodyController
     eventService.onEvent('smarthome/update/*', function(topic, state) {
     	var itemName = topic.split('/')[2];
     	
+    	console.log('Item ' + itemName + ' updated: ' +state);
+    	
+    	if($rootScope.itemUpdates[itemName] + 500 > new Date().getTime()) {
+    		console.log('Ignoring update for ' + itemName + ', because update was probably triggered through UI.');
+    		return;
+    	}
+    	
     	var changeStateRecursively = function(item) {
+    		var updateState = true;
     		if(item.name === itemName) {
-    			$scope.$apply(function (scope) {
-    				item.state = state;
-    			});
-				console.log('Changed state of ' + itemName + ' to ' +state)
+    			// ignore ON and OFF update for Dimmer
+    			if(item.type === 'DimmerItem') {
+					if(state === 'ON' || state == 'OFF') {
+						updateState = false;
+    				}
+    			}
+    			// ignore O, OFF and percentage update for Dimmer
+    			if(item.type === 'ColorItem') {
+    				if(state.indexOf(',') < 0) {
+						updateState = false;
+    				}
+    			}
+    			if(updateState) {
+	    			$scope.$apply(function (scope) {
+	    				item.state = state;
+	    			});
+    			} else {
+    				console.log('Ignoring state ' + state + ' for ' + itemName)
+    			}
     		}
 			if(item.members) {
 				$.each(item.members, function(i, memberItem) {

@@ -24,7 +24,7 @@ var DataCache = function($q, $rootScope, remoteService, dataType, staticData) {
                 return;
             }
         });
-		if(staticData && self.initialFetch) {
+		if(cacheEnabled && staticData && self.initialFetch) {
 		    deferred.resolve($rootScope.data[dataType]);
 		} else {
     		remoteService.getAll(function(data) {
@@ -43,7 +43,7 @@ var DataCache = function($q, $rootScope, remoteService, dataType, staticData) {
     				deferred.resolve('No update');
     			}
     		});
-            if(cacheEnabled) {
+            if(cacheEnabled && self.initialFetch) {
                 deferred.notify($rootScope.data[dataType]);
             }
 		}
@@ -120,7 +120,7 @@ angular.module('SmartHomeManagerApp.services.repositories', []).factory('binding
 	return dataCache;
 }).factory('itemRepository', 
 		function($q, $rootScope, itemService) {
-	var dataCache = new DataCache($q, $rootScope, itemService, 'items', true)
+	var dataCache = new DataCache($q, $rootScope, itemService, 'items')
 	$rootScope.data.items = [];
 	return dataCache;
 });

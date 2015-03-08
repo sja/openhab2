@@ -19,7 +19,8 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 	}
 
     itemRepository.getAll(function(items) {
-        $scope.items['All'] = items;
+        $scope.tabs = [];
+    	$scope.items['All'] = items;
         for (var int = 0; int < items.length; int++) {
             var item = items[int];
             if (item.type === 'GroupItem') {
@@ -29,30 +30,32 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
             }
         }
         
-        $scope.masonry = function() {
-            if ($scope.data.items) {
-                $timeout(function() {
-                    new Masonry('.items', {});
-                }, 100, false);
-            }
-		}
-	    $scope.$watch('data.items', function(value) {
-	    	$scope.masonry();
-	    });
-        $scope.$watch('selectedTabIndex', function() {
-        	$scope.masonry();
-		});
         $scope.masonry();
-        $scope.getItem = function(itemName) {
-        	for (var int = 0; int < $scope.data.items.length; int++) {
-                var item = $scope.data.items[int];
-                if (item.name === itemName) {
-                    return item;
-                }
-            }
-        	return null;
-		}
     });
+    
+    $scope.getItem = function(itemName) {
+    	for (var int = 0; int < $scope.data.items.length; int++) {
+            var item = $scope.data.items[int];
+            if (item.name === itemName) {
+                return item;
+            }
+        }
+    	return null;
+	}
+    
+    $scope.masonry = function() {
+        if ($scope.data.items) {
+            $timeout(function() {
+                new Masonry('.items', {});
+            }, 100, false);
+        }
+	}
+    $scope.$watch('data.items', function(value) {
+    	$scope.masonry();
+    });
+    $scope.$watch('selectedTabIndex', function() {
+    	$scope.masonry();
+	});
 
 }).controller('ControlController', function($scope, $timeout, itemService) {
 	$scope.getItemName = function(itemName) {
@@ -181,40 +184,29 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
     $scope.isReadOnly = function (item) {
     	return item.stateDescription ? item.stateDescription.readOnly : false;
     }
-    
-    $scope.sendCommand = function(state) {
-        itemService.sendCommand({
-            itemName : $scope.item.name
-        }, state);
-    }
-}).controller('ItemController', function($scope, itemService) {
+}).controller('ItemController', function($rootScope, $scope, itemService) {
     $scope.sendCommand = function(command) {
+    	$rootScope.itemUpdates[$scope.item.name] = new Date().getTime();
         itemService.sendCommand({
             itemName : $scope.item.name
         }, command);
     };
-    $scope.sendState = function(state) {
-        $scope.sendCommand(state);
-        $scope.item.state = state;
-    }
 }).controller('DefaultItemController', function($scope, itemService) {
 
 }).controller('SwitchItemController', function($scope, $timeout, itemService) {
     $scope.setOn = function(state) {
-        itemService.sendCommand({
-            itemName : $scope.item.name
-        }, state);
+        $scope.sendCommand(state);
     }
 }).controller('DimmerItemController', function($scope, $timeout, itemService) {
-
+	if($scope.item.state === 'Uninitialized') {
+		$scope.item.state = '0';
+	} 
 	$scope.on = parseInt($scope.item.state) > 0 ? 'ON' : 'OFF';
     
 	$scope.setOn = function(on) {
 		$scope.on = on === 'ON' ? 'ON' : 'OFF';
 		
-        itemService.sendCommand({
-            itemName : $scope.item.name
-        }, on);
+        $scope.sendCommand(on);
         
         var brightness = parseInt($scope.item.state);
         if(on === 'ON' && brightness === 0) {
@@ -231,9 +223,7 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
         // send updates every 300 ms only
         if(!$scope.pending) {
             $timeout(function() {
-                itemService.sendCommand({
-                    itemName : $scope.item.name
-                }, $scope.brightnessValue);
+                $scope.sendCommand($scope.brightnessValue);
                 $scope.pending = false;
             }, 300);
             $scope.pending = true;
@@ -273,9 +263,7 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
 	
 	$scope.setOn = function(on) {
 		
-        itemService.sendCommand({
-            itemName : $scope.item.name
-        }, on);
+		 $scope.sendCommand(on);
         
         if(on === 'ON' && $scope.brightness === 0) {
         	// set state to ON
@@ -290,38 +278,52 @@ angular.module('SmartHomeManagerApp.controllers.control', []).controller('Contro
         	$scope.item.state = toState(stateObject);
         }
     }
-	
+    
+	$scope.pending = false;
+    
     $scope.setBrightness = function(brightness) {
-        var brightnessValue = brightness === 0 ? '0' : brightness;
-        
-        itemService.sendCommand({
-            itemName : $scope.item.name
-        }, brightnessValue);
-        
-        var stateObject = getStateAsObject($scope.item.state);
-    	stateObject.b = brightnessValue;
-    	$scope.item.state = toState(stateObject);
+    	 // send updates every 300 ms only
+        if(!$scope.pending) {
+        	$timeout(function() {
+	        	var brightnessValue = brightness === 0 ? '0' : brightness;
+		        
+	        	 $scope.sendCommand(brightnessValue);
+		        
+		        var stateObject = getStateAsObject($scope.item.state);
+		    	stateObject.b = brightnessValue;
+		    	$scope.item.state = toState(stateObject);
+	        	$scope.pending = false;
+	        }, 300);
+	        $scope.pending = true;
+        }
     }
     
     $scope.setHue = function(hue) {
-        var hueValue = hue === 0 ? '0' : hue;
-        
-        var stateObject = getStateAsObject($scope.item.state);
-    	stateObject.h = hueValue;
-    	
-        if(!stateObject.s) {
-        	stateObject.s = 100;
+    	 // send updates every 300 ms only
+        if(!$scope.pending) {
+            $timeout(function() {
+            	var hueValue = hue === 0 ? '0' : hue;
+            	
+            	var stateObject = getStateAsObject($scope.item.state);
+            	stateObject.h = hueValue;
+            	//TODO: uncomment after DEO
+            	// if(!stateObject.s) {
+                	stateObject.s = 100;
+                //}
+                // if light is OFF, change it to ON
+                if(!stateObject.b) {
+                	stateObject.b = 100;
+                }
+                
+                $scope.item.state = toState(stateObject);
+                 
+                $scope.sendCommand($scope.item.state);
+   
+            	$scope.pending = false;
+            }, 300);
+            $scope.pending = true;
         }
-        // if light is OFF, change it to ON
-        if(!stateObject.b) {
-        	stateObject.b = 100;
-        }
-         
-        itemService.sendCommand({
-            itemName : $scope.item.name
-        }, $scope.item.state);
         
-        $scope.item.state = toState(stateObject);
     }
 
     $scope.getHexColor = function() {
