@@ -13,7 +13,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -27,14 +29,10 @@ import org.eclipse.smarthome.core.library.types.DateTimeType;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.HSBType;
 import org.eclipse.smarthome.core.library.types.IncreaseDecreaseType;
-import org.eclipse.smarthome.core.library.types.NextPreviousType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.OpenClosedType;
 import org.eclipse.smarthome.core.library.types.PercentType;
-import org.eclipse.smarthome.core.library.types.PlayPauseType;
 import org.eclipse.smarthome.core.library.types.PointType;
-import org.eclipse.smarthome.core.library.types.RawType;
-import org.eclipse.smarthome.core.library.types.RewindFastforwardType;
 import org.eclipse.smarthome.core.library.types.StopMoveType;
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.library.types.UpDownType;
@@ -73,6 +71,30 @@ public class Script {
     private ScriptEngine engine = null;
     private String fileName;
 
+    private final Class<?>[] sharedClasses = new Class[] { RuleSet.class, Rule.class, ChangedEventTrigger.class,
+            CommandEventTrigger.class, Event.class, EventTrigger.class, ShutdownTrigger.class, StartupTrigger.class,
+            TimerTrigger.class, TriggerType.class, PersistenceExtensions.class, Openhab.class, State.class,
+            Command.class, DateTime.class, StringUtils.class, URLEncoder.class,
+            // ESH Types
+            DateTimeType.class, DecimalType.class, HSBType.class, IncreaseDecreaseType.class, OnOffType.class,
+            OpenClosedType.class, PercentType.class, PointType.class, StopMoveType.class, UpDownType.class,
+            StringType.class,
+            // System
+            BusEvent.class,
+            // Utils
+            FileUtils.class, FilenameUtils.class, File.class };
+    // TODO: CallType (Waiting for PR https://github.com/eclipse/smarthome/pull/236)
+    // TODO: Maybe remove BusEvent (and its alias) after openjdk's nashorn can call super class methods.
+
+    @SuppressWarnings("serial")
+    final Map<String, Class<?>> aliases = new HashMap<String, Class<?>>() {
+        {
+            put("pe", PersistenceExtensions.class);
+            put("oh", Openhab.class);
+            put("be", BusEvent.class);
+        }
+    };
+
     public Script(ScriptManager scriptManager, File file)
             throws FileNotFoundException, ScriptException, NoSuchMethodException {
         this.scriptManager = scriptManager;
@@ -110,7 +132,7 @@ public class Script {
      * further information:
      * http://apache-felix.18485.x6.nabble.com/org-osgi-framework-bootdelegation-and-org-osgi-framework-system-packages-
      * extra-td4946354.html
-     * https://bugs.eclipse.org/bugs/show_bug.cgi?id=466683
+     * https://bugs.eclipse.org/bugs/show_bug.cgi?id=466683 (2015-09-25: CLOSED FIXED)
      * http://spring.io/blog/2009/01/19/exposing-the-boot-classpath-in-osgi/
      * http://osdir.com/ml/users-felix-apache/2015-02/msg00067.html
      * http://stackoverflow.com/questions/30225398/java-8-scriptengine-across-classloaders
@@ -151,63 +173,87 @@ public class Script {
             logger.info("initializeSciptGlobals for : " + engine.getFactory().getEngineName());
             engine.put("ItemRegistry", scriptManager.getItemRegistry());
             engine.put("ir", scriptManager.getItemRegistry());
-            engine.eval("var shared = org.openhab.core.jsr223.internal.shared,\n"
-                    + "RuleSet 				= Java.type('org.openhab.core.jsr223.internal.shared.RuleSet'),\n"
-                    + "Rule 					= Java.type('org.openhab.core.jsr223.internal.shared.Rule'),\n"
-                    + "ChangedEventTrigger 	= Java.type('org.openhab.core.jsr223.internal.shared.ChangedEventTrigger'),\n"
-                    + "CommandEventTrigger 	= Java.type('org.openhab.core.jsr223.internal.shared.CommandEventTrigger'),\n"
-                    + "Event 				= Java.type('org.openhab.core.jsr223.internal.shared.Event'),\n"
-                    + "EventTrigger			= Java.type('org.openhab.core.jsr223.internal.shared.EventTrigger'),\n"
-                    + "ShutdownTrigger 		= Java.type('org.openhab.core.jsr223.internal.shared.ShutdownTrigger'),\n"
-                    + "StartupTrigger 		= Java.type('org.openhab.core.jsr223.internal.shared.StartupTrigger'),\n"
-                    + "TimerTrigger 			= Java.type('org.openhab.core.jsr223.internal.shared.TimerTrigger'),\n"
-                    + "TriggerType 			= Java.type('org.openhab.core.jsr223.internal.shared.TriggerType'),\n"
-                    + "PersistenceExtensions	= Java.type('org.openhab.core.persistence.extensions.PersistenceExtensions'),\n"
-                    + "pe					= Java.type('org.openhab.core.persistence.extensions.PersistenceExtensions'),\n"
-                    + "oh 					= Java.type('org.openhab.core.jsr223.internal.shared.Openhab'),\n"
-                    + "State 				= Java.type('org.openhab.core.types.State'),\n"
-                    + "Command 				= Java.type('org.openhab.core.types.Command'),\n"
-                    + "DateTime 				= Java.type('org.joda.time.DateTime'),\n"
-                    + "StringUtils 			= Java.type('org.apache.commons.lang.StringUtils'),\n"
-                    + "URLEncoder 			= Java.type('java.net.URLEncoder'),\n"
 
-            + "CallType 				= Java.type('org.openhab.library.tel.types.CallType'),\n"
-                    + "DateTimeType 			= Java.type('org.openhab.core.library.types.DateTimeType'),\n"
-                    + "DecimalType 			= Java.type('org.openhab.core.library.types.DecimalType'),\n"
-                    + "HSBType 				= Java.type('org.openhab.core.library.types.HSBType'),\n"
-                    + "IncreaseDecreaseType 	= Java.type('org.openhab.core.library.types.IncreaseDecreaseType'),\n"
-                    + "OnOffType 			= Java.type('org.openhab.core.library.types.OnOffType'),\n"
-                    + "OpenClosedType 		= Java.type('org.openhab.core.library.types.OpenClosedType'),\n"
-                    + "PercentType 			= Java.type('org.openhab.core.library.types.PercentType'),\n"
-                    + "PointType 			= Java.type('org.openhab.core.library.types.PointType'),\n"
-                    + "StopMoveType 			= Java.type('org.openhab.core.library.types.StopMoveType'),\n"
-                    + "UpDownType 			= Java.type('org.openhab.core.library.types.UpDownType'),\n"
-                    + "StringType 			= Java.type('org.openhab.core.library.types.StringType'),\n"
+            String toEval = "var shared = org.openhab.core.jsr223.internal.shared";
+            logger.trace("Adding shared classes to scripting engine:");
+            for (Class<?> c : sharedClasses) {
+                logger.trace("var {} = Java.type('{}')", c.getSimpleName(), c.getName());
+                toEval += "," + c.getSimpleName() + "=Java.type('" + c.getName() + "')";
+            }
 
-            // As of now, Nashorn does not support calling super class methods.
-            // http://nashorn-dev.openjdk.java.narkive.com/VX59ksgk/calling-super-methods-when-extending-classes
-            // therefore:
-                    + "BusEvent 				= Java.type('org.openhab.model.script.actions.BusEvent'),\n"
-                    + "be 					= Java.type('org.openhab.model.script.actions.BusEvent'),\n"
+            logger.trace("Adding aliases:");
+            for (Map.Entry<String, Class<?>> entry : aliases.entrySet()) {
+                logger.trace("Alias: {} = {}", entry.getKey(), entry.getValue().getSimpleName());
+                toEval += "," + entry.getKey() + "=" + entry.getValue().getSimpleName();
+            }
+            toEval += ",transform = " + Openhab.class.getSimpleName() + ".getAction('Transformation').static.transform";
+            toEval += ",getItem      = ItemRegistry.getItem" + ",postUpdate   = BusEvent.postUpdate"
+                    + ",sendCommand  = BusEvent.sendCommand";
 
-            + "transform 			= oh.getAction('Transformation').static.transform,\n"
+            toEval += ",ohEngine = 'javascript'";
 
-            // Item
-                    + "getItem 				= ItemRegistry.getItem,\n"
-                    + "postUpdate 			= BusEvent.postUpdate,\n"
-                    + "sendCommand 			= BusEvent.sendCommand,\n"
+            toEval += ";";
 
-            // System
-                    + "FileUtils 			= Java.type('org.apache.commons.io.FileUtils'),\n"
-                    + "FilenameUtils			= Java.type('org.apache.commons.io.FilenameUtils'),\n"
-                    + "File 					= Java.type('java.io.File'),\n"
-
-            + "ohEngine				= 'javascript';\n"
-
-            // Helper Functions and Libs eventually later a lib Folder for default (Auto) loaded Libraries
-            // Bas64: https://gist.github.com/ncerminara/11257943
-            // +"load('configurations/scripts/jslib/b64.js');\n"
-            );
+            engine.eval(toEval);
+            /*
+             * engine.eval("var shared = org.openhab.core.jsr223.internal.shared,\n"
+             * + "RuleSet 				= Java.type('org.openhab.core.jsr223.internal.shared.RuleSet'),\n"
+             * + "Rule 					= Java.type('org.openhab.core.jsr223.internal.shared.Rule'),\n"
+             * + "ChangedEventTrigger 	= Java.type('org.openhab.core.jsr223.internal.shared.ChangedEventTrigger'),\n"
+             * + "CommandEventTrigger 	= Java.type('org.openhab.core.jsr223.internal.shared.CommandEventTrigger'),\n"
+             * + "Event 				= Java.type('org.openhab.core.jsr223.internal.shared.Event'),\n"
+             * + "EventTrigger			= Java.type('org.openhab.core.jsr223.internal.shared.EventTrigger'),\n"
+             * + "ShutdownTrigger 		= Java.type('org.openhab.core.jsr223.internal.shared.ShutdownTrigger'),\n"
+             * + "StartupTrigger 		= Java.type('org.openhab.core.jsr223.internal.shared.StartupTrigger'),\n"
+             * + "TimerTrigger 			= Java.type('org.openhab.core.jsr223.internal.shared.TimerTrigger'),\n"
+             * + "TriggerType 			= Java.type('org.openhab.core.jsr223.internal.shared.TriggerType'),\n"
+             * + "PersistenceExtensions	= Java.type('org.openhab.core.persistence.extensions.PersistenceExtensions'),\n"
+             * + "pe					= Java.type('org.openhab.core.persistence.extensions.PersistenceExtensions'),\n"
+             * + "oh 					= Java.type('org.openhab.core.jsr223.internal.shared.Openhab'),\n"
+             * + "State 				= Java.type('org.openhab.core.types.State'),\n"
+             * + "Command 				= Java.type('org.openhab.core.types.Command'),\n"
+             * + "DateTime 				= Java.type('org.joda.time.DateTime'),\n"
+             * + "StringUtils 			= Java.type('org.apache.commons.lang.StringUtils'),\n"
+             * + "URLEncoder 			= Java.type('java.net.URLEncoder'),\n"
+             *
+             * + "CallType 				= Java.type('org.openhab.library.tel.types.CallType'),\n"
+             * + "DateTimeType 			= Java.type('org.openhab.core.library.types.DateTimeType'),\n"
+             * + "DecimalType 			= Java.type('org.openhab.core.library.types.DecimalType'),\n"
+             * + "HSBType 				= Java.type('org.openhab.core.library.types.HSBType'),\n"
+             * + "IncreaseDecreaseType 	= Java.type('org.openhab.core.library.types.IncreaseDecreaseType'),\n"
+             * + "OnOffType 			= Java.type('org.openhab.core.library.types.OnOffType'),\n"
+             * + "OpenClosedType 		= Java.type('org.openhab.core.library.types.OpenClosedType'),\n"
+             * + "PercentType 			= Java.type('org.openhab.core.library.types.PercentType'),\n"
+             * + "PointType 			= Java.type('org.openhab.core.library.types.PointType'),\n"
+             * + "StopMoveType 			= Java.type('org.openhab.core.library.types.StopMoveType'),\n"
+             * + "UpDownType 			= Java.type('org.openhab.core.library.types.UpDownType'),\n"
+             * + "StringType 			= Java.type('org.openhab.core.library.types.StringType'),\n"
+             *
+             * // As of now, Nashorn does not support calling super class methods.
+             * // http://nashorn-dev.openjdk.java.narkive.com/VX59ksgk/calling-super-methods-when-extending-classes
+             * // therefore:
+             * + "BusEvent 				= Java.type('org.openhab.model.script.actions.BusEvent'),\n"
+             * + "be 					= Java.type('org.openhab.model.script.actions.BusEvent'),\n"
+             *
+             * + "transform 			= oh.getAction('Transformation').static.transform,\n"
+             *
+             * // Item
+             * + "getItem 				= ItemRegistry.getItem,\n"
+             * + "postUpdate 			= BusEvent.postUpdate,\n"
+             * + "sendCommand 			= BusEvent.sendCommand,\n"
+             *
+             * // System
+             * + "FileUtils 			= Java.type('org.apache.commons.io.FileUtils'),\n"
+             * + "FilenameUtils			= Java.type('org.apache.commons.io.FilenameUtils'),\n"
+             * + "File 					= Java.type('java.io.File'),\n"
+             *
+             * + "ohEngine				= 'javascript';\n"
+             *
+             * // Helper Functions and Libs eventually later a lib Folder for default (Auto) loaded Libraries
+             * // Bas64: https://gist.github.com/ncerminara/11257943
+             * // +"load('configurations/scripts/jslib/b64.js');\n"
+             * );
+             */
 
         } catch (ScriptException e) {
             logger.error("ScriptException in initializeSciptGlobals while importing default-classes: ", e);
@@ -215,59 +261,69 @@ public class Script {
     }
 
     private void initializeGeneralGlobals() {
-        engine.put("RuleSet", RuleSet.class);
-        engine.put("Rule", Rule.class);
-        engine.put("ChangedEventTrigger", ChangedEventTrigger.class);
-        engine.put("CommandEventTrigger", CommandEventTrigger.class);
-        engine.put("Event", Event.class);
-        engine.put("EventTrigger", EventTrigger.class);
-        engine.put("ShutdownTrigger", ShutdownTrigger.class);
-        engine.put("StartupTrigger", StartupTrigger.class);
-        engine.put("TimerTrigger", TimerTrigger.class);
-        engine.put("TriggerType", TriggerType.class);
-        engine.put("BusEvent", BusEvent.class);
-        engine.put("be", BusEvent.class);
-        engine.put("PersistenceExtensions", PersistenceExtensions.class);
-        engine.put("pe", PersistenceExtensions.class);
-        engine.put("oh", Openhab.class);
-        engine.put("State", State.class);
-        engine.put("Command", Command.class);
-        engine.put("ItemRegistry", scriptManager.getItemRegistry());
-        engine.put("ir", scriptManager.getItemRegistry());
-        engine.put("DateTime", DateTime.class);
-        engine.put("StringUtils", StringUtils.class);
-        engine.put("URLEncoder", URLEncoder.class);
-        engine.put("FileUtils", FileUtils.class);
-        engine.put("FilenameUtils", FilenameUtils.class);
-        engine.put("File", File.class);
 
-        // default types, TODO: auto import would be nice
-        // engine.put("CallType", CallType.class);
-
-        engine.put("DateTimeType", DateTimeType.class);
-        engine.put("DecimalType", DecimalType.class);
-        engine.put("HSBType", HSBType.class);
-        engine.put("IncreaseDecreaseType", IncreaseDecreaseType.class);
-        engine.put("OnOffType", OnOffType.class);
-        engine.put("NextPreviousType", NextPreviousType.class);
-        engine.put("OpenClosedType", OpenClosedType.class);
-        engine.put("PlayPauseType", PlayPauseType.class);
-        engine.put("PercentType", PercentType.class);
-        engine.put("PointType", PointType.class);
-        engine.put("RawType", RawType.class);
-        engine.put("RewindFastforwardType", RewindFastforwardType.class);
-        engine.put("StopMoveType", StopMoveType.class);
-        engine.put("UpDownType", UpDownType.class);
-        engine.put("StringType", StringType.class);
+        for (Class<?> c : sharedClasses) {
+            logger.trace("Put {} as {} to Engine Scope", c, c.getSimpleName());
+            engine.put(c.getSimpleName(), c);
+        }
+        for (Map.Entry<String, Class<?>> entry : aliases.entrySet()) {
+            logger.trace("Put {} as {} to Engine Scope", entry.getValue(), entry.getKey());
+            engine.put(entry.getKey(), entry.getValue());
+        }
+        /*
+         * engine.put("RuleSet", RuleSet.class);
+         * engine.put("Rule", Rule.class);
+         * engine.put("ChangedEventTrigger", ChangedEventTrigger.class);
+         * engine.put("CommandEventTrigger", CommandEventTrigger.class);
+         * engine.put("Event", Event.class);
+         * engine.put("EventTrigger", EventTrigger.class);
+         * engine.put("ShutdownTrigger", ShutdownTrigger.class);
+         * engine.put("StartupTrigger", StartupTrigger.class);
+         * engine.put("TimerTrigger", TimerTrigger.class);
+         * engine.put("TriggerType", TriggerType.class);
+         * engine.put("BusEvent", BusEvent.class);
+         * engine.put("be", BusEvent.class);
+         * engine.put("PersistenceExtensions", PersistenceExtensions.class);
+         * engine.put("pe", PersistenceExtensions.class);
+         * engine.put("oh", Openhab.class);
+         * engine.put("State", State.class);
+         * engine.put("Command", Command.class);
+         * engine.put("ItemRegistry", scriptManager.getItemRegistry());
+         * engine.put("ir", scriptManager.getItemRegistry());
+         * engine.put("DateTime", DateTime.class);
+         * engine.put("StringUtils", StringUtils.class);
+         * engine.put("URLEncoder", URLEncoder.class);
+         * engine.put("FileUtils", FileUtils.class);
+         * engine.put("FilenameUtils", FilenameUtils.class);
+         * engine.put("File", File.class);
+         *
+         * // default types, TODO: auto import would be nice
+         * // engine.put("CallType", CallType.class);
+         *
+         * engine.put("DateTimeType", DateTimeType.class);
+         * engine.put("DecimalType", DecimalType.class);
+         * engine.put("HSBType", HSBType.class);
+         * engine.put("IncreaseDecreaseType", IncreaseDecreaseType.class);
+         * engine.put("OnOffType", OnOffType.class);
+         * engine.put("NextPreviousType", NextPreviousType.class);
+         * engine.put("OpenClosedType", OpenClosedType.class);
+         * engine.put("PlayPauseType", PlayPauseType.class);
+         * engine.put("PercentType", PercentType.class);
+         * engine.put("PointType", PointType.class);
+         * engine.put("RawType", RawType.class);
+         * engine.put("RewindFastforwardType", RewindFastforwardType.class);
+         * engine.put("StopMoveType", StopMoveType.class);
+         * engine.put("UpDownType", UpDownType.class);
+         * engine.put("StringType", StringType.class);
+         */
     }
 
     private String getFileExtension(File file) {
-        String extension = null;
         if (file.getName().contains(".")) {
             String name = file.getName();
-            extension = name.substring(name.lastIndexOf('.') + 1, name.length());
+            return name.substring(name.lastIndexOf('.') + 1, name.length());
         }
-        return extension;
+        return null;
     }
 
     public List<Rule> getRules() {
@@ -275,6 +331,7 @@ public class Script {
     }
 
     public void executeRule(Rule rule, Event event) {
+        logger.debug("Executing Rule {} in new Thread.", rule);
         Thread t = new Thread(new RuleExecutionRunnable(rule, event));
         t.start();
     }
