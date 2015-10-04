@@ -8,7 +8,7 @@
  */
 package org.openhab.core.jsr223.internal;
 
-import org.openhab.core.scriptengine.action.ActionService;
+import org.eclipse.smarthome.core.scriptengine.action.ActionService;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
@@ -23,19 +23,21 @@ import org.slf4j.LoggerFactory;
  */
 public class Jsr223CoreActivator implements BundleActivator {
 
-	private final static Logger logger = LoggerFactory.getLogger(Jsr223CoreActivator.class);
-	public static ServiceTracker<ActionService, ActionService> actionServiceTracker;
+    private final static Logger logger = LoggerFactory.getLogger(Jsr223CoreActivator.class);
+    public static ServiceTracker<ActionService, ActionService> actionServiceTracker;
 
-	public void start(BundleContext bc) throws Exception {
-		actionServiceTracker = new ServiceTracker<ActionService, ActionService>(bc, ActionService.class, null);
-		actionServiceTracker.open();
+    @Override
+    public void start(BundleContext bc) throws Exception {
+        actionServiceTracker = new ServiceTracker<ActionService, ActionService>(bc, ActionService.class, null);
+        actionServiceTracker.open();
 
-		logger.debug("Registered 'jsr223' scripting-engine");
-	}
+        logger.debug("Registered 'jsr223' scripting-engine");
+    }
 
-	public void stop(BundleContext context) throws Exception {
-		actionServiceTracker.close();
-		logger.debug("UnRegistered 'jsr223' scripting-engine");
-	}
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        actionServiceTracker.close();
+        logger.debug("UnRegistered 'jsr223' scripting-engine");
+    }
 
 }

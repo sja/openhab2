@@ -8,23 +8,18 @@
  */
 package org.openhab.core.jsr223.internal.engine;
 
-import static org.openhab.core.events.EventConstants.TOPIC_PREFIX;
-import static org.openhab.core.events.EventConstants.TOPIC_SEPERATOR;
-
-import java.util.Collection;
-
-import org.openhab.core.items.GenericItem;
-import org.openhab.core.items.Item;
-import org.openhab.core.items.ItemNotFoundException;
-import org.openhab.core.items.ItemRegistry;
-import org.openhab.core.items.ItemRegistryChangeListener;
-import org.openhab.core.items.StateChangeListener;
+import org.eclipse.smarthome.core.common.registry.RegistryChangeListener;
+import org.eclipse.smarthome.core.items.GenericItem;
+import org.eclipse.smarthome.core.items.Item;
+import org.eclipse.smarthome.core.items.ItemNotFoundException;
+import org.eclipse.smarthome.core.items.ItemRegistry;
+import org.eclipse.smarthome.core.items.StateChangeListener;
+import org.eclipse.smarthome.core.types.Command;
+import org.eclipse.smarthome.core.types.EventType;
+import org.eclipse.smarthome.core.types.State;
 import org.openhab.core.jsr223.internal.engine.scriptmanager.ScriptManager;
 import org.openhab.core.jsr223.internal.shared.Rule;
 import org.openhab.core.jsr223.internal.shared.TriggerType;
-import org.openhab.core.types.Command;
-import org.openhab.core.types.EventType;
-import org.openhab.core.types.State;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 import org.quartz.Scheduler;
@@ -40,175 +35,224 @@ import org.slf4j.LoggerFactory;
  * @author Simon Merschjohann
  * @since 1.7.0
  */
-public class Jsr223Engine implements EventHandler, ItemRegistryChangeListener, StateChangeListener {
+public class Jsr223Engine implements EventHandler, RegistryChangeListener<Item>, StateChangeListener {
 
-	static private final Logger logger = LoggerFactory.getLogger(Jsr223Engine.class);
+    static private final Logger logger = LoggerFactory.getLogger(Jsr223Engine.class);
 
-	private ItemRegistry itemRegistry;
+    // TODO Extracted from compat layer
+    public static final String TOPIC_PREFIX = "openhab";
+    public static final String TOPIC_SEPERATOR = "/";
 
-	private RuleTriggerManager triggerManager;
-	private ScriptManager scriptManager;
+    private ItemRegistry itemRegistry;
 
-	private Scheduler scheduler;
+    private RuleTriggerManager triggerManager;
+    private ScriptManager scriptManager;
 
-	private boolean activated;
+    private Scheduler scheduler;
 
-	public void activate() {
-		if (activated)
-			return;
+    private boolean activated;
 
-		activated = true;
+    public void activate() {
+        if (activated)
+            return;
 
-		try {
-			scheduler = StdSchedulerFactory.getDefaultScheduler();
-		} catch (SchedulerException e) {
-			logger.error("initializing scheduler throws exception", e);
-		}
+        activated = true;
 
-		logger.debug("activate()");
+        try {
+            scheduler = StdSchedulerFactory.getDefaultScheduler();
+        } catch (SchedulerException e) {
+            logger.error("initializing scheduler throws exception", e);
+        }
 
-		triggerManager = new RuleTriggerManager(scheduler);
-		scriptManager = new ScriptManager(triggerManager, itemRegistry);
+        logger.debug("activate()");
 
-		if (!isEnabled()) {
-			logger.info("Jsr232 engine is disabled.");
-			return;
-		}
+        triggerManager = new RuleTriggerManager(scheduler);
+        scriptManager = new ScriptManager(triggerManager, itemRegistry);
 
-		logger.debug("Started Jsr232 engine");
+        if (!isEnabled()) {
+            logger.info("Jsr232 engine is disabled.");
+            return;
+        }
 
-		// register us on all items which are already available in the registry
-		for (Item item : itemRegistry.getItems()) {
-			internalItemAdded(item);
-		}
+        logger.debug("Started Jsr232 engine");
 
-		runStartupRules();
-	}
+        // register us on all items which are already available in the registry
+        for (Item item : itemRegistry.getItems()) {
+            internalItemAdded(item);
+        }
 
-	public void deactivate() {
-		// execute all scripts that were registered for system shutdown
-		scriptManager.executeRules(triggerManager.getRules(TriggerType.SHUTDOWN), new org.openhab.core.jsr223.internal.shared.Event(TriggerType.SHUTDOWN, null, null, null, null));
-		triggerManager.clearAll();
-		triggerManager = null;
-	}
+        runStartupRules();
+    }
 
-	public void setItemRegistry(ItemRegistry itemRegistry) {
-		logger.debug("itemRegistry set");
-		this.itemRegistry = itemRegistry;
-		itemRegistry.addItemRegistryChangeListener(this);
-	}
+    public void deactivate() {
+        // execute all scripts that were registered for system shutdown
+        scriptManager.executeRules(triggerManager.getRules(TriggerType.SHUTDOWN),
+                new org.openhab.core.jsr223.internal.shared.Event(TriggerType.SHUTDOWN, null, null, null, null));
+        triggerManager.clearAll();
+        triggerManager = null;
+    }
 
-	public void unsetItemRegistry(ItemRegistry itemRegistry) {
-		itemRegistry.removeItemRegistryChangeListener(this);
-		this.itemRegistry = null;
-	}
+    /*
+     * public void setItemRegistry(ItemRegistry itemRegistry) {
+     * logger.debug("itemRegistry set");
+     * this.itemRegistry = itemRegistry;
+     * itemRegistry.addItemRegistryChangeListener(this);
+     * }
+     *
+     * public void unsetItemRegistry(ItemRegistry itemRegistry) {
+     * itemRegistry.removeItemRegistryChangeListener(this);
+     * this.itemRegistry = null;
+     * }
+     *
+     * /**
+     * {@inheritDoc}
+     *
+     * @Override
+     * public void allItemsChanged(Collection<String> oldItemNames) {
+     * // add the current items again
+     * Collection<Item> items = itemRegistry.getItems();
+     * for (Item item : items) {
+     * internalItemAdded(item);
+     * }
+     * if (activated)
+     * runStartupRules();
+     * }
+     */
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public void allItemsChanged(Collection<String> oldItemNames) {
-		// add the current items again
-		Collection<Item> items = itemRegistry.getItems();
-		for (Item item : items) {
-			internalItemAdded(item);
-		}
-		if (activated)
-			runStartupRules();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    /*
+     * public void itemAdded(Item item) {
+     * internalItemAdded(item);
+     * }
+     */
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public void itemAdded(Item item) {
-		internalItemAdded(item);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    /*
+     * public void itemRemoved(Item item) {
+     * if (item instanceof GenericItem) {
+     * GenericItem genericItem = (GenericItem) item;
+     * genericItem.removeStateChangeListener(this);
+     * }
+     * }
+     */
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public void itemRemoved(Item item) {
-		if (item instanceof GenericItem) {
-			GenericItem genericItem = (GenericItem) item;
-			genericItem.removeStateChangeListener(this);
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void stateChanged(Item item, State oldState, State newState) {
+        if (triggerManager != null) {
+            Iterable<Rule> rules = triggerManager.getRules(TriggerType.CHANGE, item, oldState, newState);
+            scriptManager.executeRules(rules, new org.openhab.core.jsr223.internal.shared.Event(TriggerType.CHANGE,
+                    item, oldState, newState, null));
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public void stateChanged(Item item, State oldState, State newState) {
-		if (triggerManager != null) {
-			Iterable<Rule> rules = triggerManager.getRules(TriggerType.CHANGE, item, oldState, newState);
-			scriptManager.executeRules(rules, new org.openhab.core.jsr223.internal.shared.Event(TriggerType.CHANGE, item, oldState, newState, null));
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void stateUpdated(Item item, State state) {
+        if (triggerManager != null) {
+            Iterable<Rule> rules = triggerManager.getRules(TriggerType.UPDATE, item, state);
+            scriptManager.executeRules(rules,
+                    new org.openhab.core.jsr223.internal.shared.Event(TriggerType.UPDATE, item, null, state, null));
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public void stateUpdated(Item item, State state) {
-		if (triggerManager != null) {
-			Iterable<Rule> rules = triggerManager.getRules(TriggerType.UPDATE, item, state);
-			scriptManager.executeRules(rules, new org.openhab.core.jsr223.internal.shared.Event(TriggerType.UPDATE, item, null, state, null));
-		}
-	}
+    public void receiveCommand(String itemName, Command command) {
+        if (triggerManager != null && itemRegistry != null) {
+            try {
+                Item item = itemRegistry.getItem(itemName);
+                Iterable<Rule> rules = triggerManager.getRules(TriggerType.COMMAND, item, command);
+                scriptManager.executeRules(rules, new org.openhab.core.jsr223.internal.shared.Event(TriggerType.COMMAND,
+                        item, null, null, command));
+            } catch (ItemNotFoundException e) {
+                // ignore commands for non-existent items
+                logger.trace("Received Command(ItemName={}, command={}), but item not found.", itemName, command);
+            }
+        }
+    }
 
-	public void receiveCommand(String itemName, Command command) {
-		if (triggerManager != null && itemRegistry != null) {
-			try {
-				Item item = itemRegistry.getItem(itemName);
-				Iterable<Rule> rules = triggerManager.getRules(TriggerType.COMMAND, item, command);
-				scriptManager.executeRules(rules, new org.openhab.core.jsr223.internal.shared.Event(TriggerType.COMMAND, item, null, null, command));
-			} catch (ItemNotFoundException e) {
-				// ignore commands for non-existent items
-				logger.trace("Received Command(ItemName={}, command={}), but item not found.", itemName, command);
-			}
-		}
-	}
+    private void internalItemAdded(Item item) {
+        if (item instanceof GenericItem) {
+            GenericItem genericItem = (GenericItem) item;
+            genericItem.addStateChangeListener(this);
+        }
+    }
 
-	private void internalItemAdded(Item item) {
-		if (item instanceof GenericItem) {
-			GenericItem genericItem = (GenericItem) item;
-			genericItem.addStateChangeListener(this);
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void handleEvent(Event event) {
+        final String itemName = (String) event.getProperty("item");
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public void handleEvent(Event event) {
-		String itemName = (String) event.getProperty("item");
+        final String topic = event.getTopic();
+        final String[] topicParts = topic.split(TOPIC_SEPERATOR);
 
-		String topic = event.getTopic();
-		String[] topicParts = topic.split(TOPIC_SEPERATOR);
+        if (!(topicParts.length > 2) || !topicParts[0].equals(TOPIC_PREFIX)) {
+            logger.debug("we have received an event with an invalid topic: {}", topic);
+            return;
+        }
+        final String operation = topicParts[1];
 
-		if (!(topicParts.length > 2) || !topicParts[0].equals(TOPIC_PREFIX)) {
-			return; // we have received an event with an invalid topic
-		}
-		String operation = topicParts[1];
+        if (operation.equals(EventType.COMMAND.toString())) {
+            Command command = (Command) event.getProperty("command");
+            if (command != null)
+                receiveCommand(itemName, command);
+        }
+    }
 
-		if (operation.equals(EventType.COMMAND.toString())) {
-			Command command = (Command) event.getProperty("command");
-			if (command != null)
-				receiveCommand(itemName, command);
-		}
-	}
+    private void runStartupRules() {
+        if (triggerManager != null) {
+            Iterable<Rule> startupRules = triggerManager.getRules(TriggerType.STARTUP);
 
-	private void runStartupRules() {
-		if (triggerManager != null) {
-			Iterable<Rule> startupRules = triggerManager.getRules(TriggerType.STARTUP);
+            scriptManager.executeRules(startupRules,
+                    new org.openhab.core.jsr223.internal.shared.Event(TriggerType.STARTUP, null, null, null, null));
+        }
+    }
 
-			scriptManager.executeRules(startupRules, new org.openhab.core.jsr223.internal.shared.Event(TriggerType.STARTUP, null, null, null, null));
-		}
-	}
+    /**
+     * we need to be able to deactivate the rule execution, otherwise the openHAB designer would also execute the rules.
+     *
+     * @return true, if rules should be executed, false otherwise
+     */
+    private boolean isEnabled() {
+        return !"true".equalsIgnoreCase(System.getProperty("noJsr223"));
+    }
 
-	/**
-	 * we need to be able to deactivate the rule execution, otherwise the openHAB designer would also execute the rules.
-	 *
-	 * @return true, if rules should be executed, false otherwise
-	 */
-	private boolean isEnabled() {
-		return !"true".equalsIgnoreCase(System.getProperty("noJsr223"));
-	}
+    /**
+     * Handle event of added item to item registry. Ensure, that scripts are aware of that.
+     */
+    @Override
+    public void added(Item item) {
+        internalItemAdded(item);
+    }
+
+    /**
+     * Handle event of removed item from item registry. Ensure, that scripts are aware of that.
+     */
+    @Override
+    public void removed(Item item) {
+        if (item instanceof GenericItem) {
+            GenericItem genericItem = (GenericItem) item;
+            genericItem.removeStateChangeListener(this);
+        }
+    }
+
+    /**
+     * If an item was updated, we simply remove the listener with {@link removed} and add it to the new one with
+     * {@link added}.
+     */
+    @Override
+    public void updated(Item oldElement, Item element) {
+        removed(oldElement);
+        added(element);
+    }
 
 }

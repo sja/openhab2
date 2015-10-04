@@ -8,9 +8,9 @@
  */
 package org.openhab.core.jsr223.internal.shared;
 
-import org.openhab.core.items.Item;
-import org.openhab.core.types.Command;
-import org.openhab.core.types.State;
+import org.eclipse.smarthome.core.items.Item;
+import org.eclipse.smarthome.core.types.Command;
+import org.eclipse.smarthome.core.types.State;
 
 /**
  * Event is used by a Script to listen for specific events
@@ -19,63 +19,65 @@ import org.openhab.core.types.State;
  * @since 1.7.0
  */
 public class Event {
-	private TriggerType triggerType;
-	private Item item;
-	private State oldState;
-	private State newState;
-	private Command command;
+    private TriggerType triggerType;
+    private Item item;
+    private State oldState;
+    private State newState;
+    private Command command;
 
-	public Event(TriggerType triggerType, Item item, State oldState, State newState, Command command) {
-		this.setItem(item);
-		this.setOldState(oldState);
-		this.setNewState(newState);
-		this.setTriggerType(triggerType);
-		this.setCommand(command);
-	}
+    public Event(TriggerType triggerType, org.eclipse.smarthome.core.items.Item item, State oldState, State newState,
+            Command command) {
+        this.setItem(item);
+        this.setOldState(oldState);
+        this.setNewState(newState);
+        this.setTriggerType(triggerType);
+        this.setCommand(command);
+    }
 
-	public Command getCommand() {
-		return command;
-	}
+    public Command getCommand() {
+        return command;
+    }
 
-	public void setCommand(Command cmd) {
-		this.command = cmd;
-	}
+    public void setCommand(Command cmd) {
+        this.command = cmd;
+    }
 
-	public State getOldState() {
-		return oldState;
-	}
+    public State getOldState() {
+        return oldState;
+    }
 
-	public void setOldState(State oldState) {
-		this.oldState = oldState;
-	}
+    public void setOldState(State oldState) {
+        this.oldState = oldState;
+    }
 
-	public State getNewState() {
-		return newState;
-	}
+    public State getNewState() {
+        return newState;
+    }
 
-	public void setNewState(State newState) {
-		this.newState = newState;
-	}
+    public void setNewState(State newState) {
+        this.newState = newState;
+    }
 
-	public Item getItem() {
-		return item;
-	}
+    public Item getItem() {
+        return item;
+    }
 
-	public void setItem(Item item) {
-		this.item = item;
-	}
+    public void setItem(Item item) {
+        this.item = item;
+    }
 
-	public TriggerType getTriggerType() {
-		return this.triggerType;
-	}
+    public TriggerType getTriggerType() {
+        return this.triggerType;
+    }
 
-	public void setTriggerType(TriggerType triggerType) {
-		this.triggerType = triggerType;
-	}
+    public void setTriggerType(TriggerType triggerType) {
+        this.triggerType = triggerType;
+    }
 
-	@Override
-	public String toString() {
-		return "Event [triggerType=" + triggerType + ", item=" + item + ", oldState=" + oldState + ", newState=" + newState + ", command=" + command + "]";
-	}
+    @Override
+    public String toString() {
+        return "Event [triggerType=" + triggerType + ", item=" + item + ", oldState=" + oldState + ", newState="
+                + newState + ", command=" + command + "]";
+    }
 
 }
